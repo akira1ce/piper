@@ -57,7 +57,9 @@ app.whenReady().then(() => {
         'Content-Security-Policy': [
           [
             "default-src 'self'",
-            is.dev ? "script-src 'self' 'unsafe-inline'" : "script-src 'self'",
+            is.dev
+              ? "script-src 'self' 'unsafe-inline' 'wasm-unsafe-eval'"
+              : "script-src 'self' 'wasm-unsafe-eval'",
             "style-src 'self' 'unsafe-inline'",
             "img-src 'self' data:",
             "font-src 'self' data:",
