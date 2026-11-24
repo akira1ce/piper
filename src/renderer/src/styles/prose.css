@@ -37,69 +37,10 @@
   border-radius: 8px;
 }
 
-/* Streamdown 自带代码块容器样式，这里不要再包一层 */
-
 .prose table {
   font-size: 0.8125rem;
 }
 
 .prose a {
   text-underline-offset: 2px;
-}
-
-/* Streamdown 代码块：去掉双重边框与多余留白 */
-[data-streamdown='code-block'] {
-  gap: 0;
-  padding: 0;
-  background: var(--bg-card);
-  border-color: var(--bg-card-hover);
-}
-
-[data-streamdown='code-block-header'] {
-  padding: 0.25rem 0.5rem;
-  min-height: 0;
-  border: 0;
-  background: transparent;
-}
-
-[data-streamdown='code-block-body'] {
-  padding: 0.5rem 0.75rem;
-  background: transparent;
-  border: 0;
-  border-radius: 0;
-}
-
-/* Streamdown 代码块右上角操作区：小图标、悬停才出现 */
-[data-streamdown='code-block-actions'] {
-  display: flex;
-  align-items: center;
-  gap: 0.25rem;
-  border: 0;
-  background: transparent;
-  opacity: 0;
-  transition: opacity 120ms ease;
-}
-
-[data-streamdown='code-block']:hover [data-streamdown='code-block-actions'],
-[data-streamdown='code-block']:focus-within [data-streamdown='code-block-actions'] {
-  opacity: 1;
-}
-
-[data-streamdown='code-block-actions'] button {
-  width: 1.5rem;
-  height: 1.5rem;
-  padding: 0;
-  border: 0;
-  background: transparent;
-  color: var(--accent-neutral);
-}
-
-[data-streamdown='code-block-actions'] button:hover {
-  background: var(--bg-card-hover);
-  color: var(--bg-fore);
-}
-
-[data-streamdown='code-block-actions'] button svg {
-  width: 0.875rem;
-  height: 0.875rem;
 }
