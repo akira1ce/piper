@@ -72,6 +72,8 @@ export interface ExtensionUiRequest {
   prefill?: string
   timeout?: number
   notifyType?: 'info' | 'warning' | 'error'
+  statusKey?: string
+  statusText?: string
 }
 
 export type DomainEvent =

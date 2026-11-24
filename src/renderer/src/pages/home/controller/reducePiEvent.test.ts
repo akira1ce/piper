@@ -109,6 +109,24 @@ describe('reduceBatch', () => {
     expect(view.retryAttempt).toBeNull()
   })
 
+  it('queues extension dialogs and tracks extension status', () => {
+    let view = reduceBatch(
+      initialChatView(),
+      batch([
+        { type: 'extension_ui', request: { id: 'd1', method: 'select', options: ['a', 'b'] } },
+        { type: 'extension_ui', request: { id: 'd1', method: 'select', options: ['a', 'b'] } },
+        { type: 'extension_ui', request: { id: 's1', method: 'setStatus', statusText: '工作中' } }
+      ])
+    )
+    expect(view.dialogs.map((dialog) => dialog.id)).toEqual(['d1'])
+    expect(view.extensionStatus).toBe('工作中')
+    view = reduceBatch(
+      view,
+      batch([{ type: 'extension_ui', request: { id: 's1', method: 'setStatus' } }], 2)
+    )
+    expect(view.extensionStatus).toBeNull()
+  })
+
   it('rejects stale batches', () => {
     const view = reduceBatch(initialChatView(), batch([{ type: 'agent_start' }], 5))
     const next = reduceBatch(view, batch([{ type: 'settled', aborted: false }], 4))
