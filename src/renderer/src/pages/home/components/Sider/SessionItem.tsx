@@ -12,6 +12,7 @@ export function SessionItem({ session, active, onOpen }: SessionItemProps): JSX.
   return (
     <button
       type="button"
+      data-session-path={session.path}
       onClick={onOpen}
       className={cn(
         'text-fore/80 hover:bg-card-hover w-full truncate rounded px-2 py-1.5 text-left text-xs',

@@ -1,7 +1,9 @@
-import { ArrowUp, PanelLeft, PanelRight } from 'lucide-react'
+import { PanelLeft, PanelRight } from 'lucide-react'
 import { useMemo } from 'react'
 import { Button } from '@renderer/components/ui/button'
 import { useChatStore } from '../../store/chat'
+import { Composer } from './Composer'
+import { MessageList } from './MessageList'
 import { useProjectsStore } from '../../store/projects'
 import { uiActions, useUiStore } from '../../store/ui'
 
@@ -56,28 +58,9 @@ export function Chat(): React.JSX.Element {
       </div>
       {banner && <div className="text-accent-rose px-3 py-1 text-[11px]">{banner.text}</div>}
 
-      <section className="flex min-h-0 flex-1 items-center justify-center">
-        <div className="text-center">
-          <p className="text-lg">今天想做点什么？</p>
-          <p className="text-accent-neutral mt-2 text-xs">会话流还没接上 pi，先把界面骨架立起来</p>
-        </div>
-      </section>
+      <MessageList />
 
-      <footer className="shrink-0 px-4 pb-4">
-        <div className="bg-card focus-within:border-accent-neutral/50 flex flex-col gap-2 rounded-xl border border-accent-neutral/25 p-2">
-          <textarea
-            rows={2}
-            placeholder="给 pi 发消息…"
-            className="placeholder:text-accent-neutral/70 w-full resize-none bg-transparent px-2 py-1 text-sm outline-none"
-          />
-          <div className="flex items-center justify-between px-1">
-            <span className="text-accent-neutral text-[11px]">Enter 发送 · Shift+Enter 换行</span>
-            <Button size="icon-sm" aria-label="发送">
-              <ArrowUp />
-            </Button>
-          </div>
-        </div>
-      </footer>
+      <Composer />
     </div>
   )
 }

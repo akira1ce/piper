@@ -71,6 +71,13 @@ export const projectActions = {
     // 不带 --session 启动 pi 本身就会创建新会话，无需再发 new_session
     const result = await window.api.pi.invoke({ type: 'start', cwd: project.path })
     if (!result.ok) return
+    const state = await window.api.pi.invoke({ type: 'state' })
+    if (state.ok) {
+      const data = state.data as { sessionFile?: string }
+      chatActions.reset()
+      chatActions.setSession(data.sessionFile ?? null)
+      useProjectsStore.setState({ activeSessionPath: data.sessionFile ?? null })
+    }
     await projectActions.loadSessions(project.id)
   },
 
@@ -88,6 +95,10 @@ export const projectActions = {
     if (state.ok) {
       const data = state.data as { sessionFile?: string }
       useProjectsStore.setState({ activeSessionPath: data.sessionFile ?? session.path })
+    }
+    const messages = await window.api.pi.invoke({ type: 'messages' })
+    if (messages.ok) {
+      chatActions.loadMessages((messages.data as { messages: unknown[] }).messages)
     }
   }
 }
