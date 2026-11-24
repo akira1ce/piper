@@ -1,10 +1,13 @@
 import { ArrowUp, PanelLeft, PanelRight } from 'lucide-react'
 import { Button } from '@renderer/components/ui/button'
+import { useChatStore } from '../../store/chat'
 import { uiActions, useUiStore } from '../../store/ui'
 
 export function Chat(): React.JSX.Element {
   const sidebarCollapsed = useUiStore((state) => state.sidebarCollapsed)
   const diffVisible = useUiStore((state) => state.diffVisible)
+  const status = useChatStore((state) => state.status)
+  const banner = useChatStore((state) => state.banner)
 
   return (
     <div className="flex h-full min-w-0 flex-col">
@@ -30,6 +33,17 @@ export function Chat(): React.JSX.Element {
           <PanelRight />
         </Button>
       </header>
+
+      <div className="text-accent-neutral px-3 py-1 text-[11px]">
+        {status === 'running'
+          ? '运行中'
+          : status === 'compacting'
+            ? '压缩上下文中'
+            : status === 'error'
+              ? '连接异常'
+              : '空闲'}
+      </div>
+      {banner && <div className="text-accent-rose px-3 py-1 text-[11px]">{banner.text}</div>}
 
       <section className="flex min-h-0 flex-1 items-center justify-center">
         <div className="text-center">

@@ -2,9 +2,12 @@ import { Group, Panel, Separator } from 'react-resizable-panels'
 import { Chat } from './components/Chat'
 import { Sider } from './components/Sider'
 import { ViewDiff } from './components/ViewDiff'
+import { usePiBridge } from './controller/usePiBridge'
 import { useUiStore } from './store/ui'
 
 export function Home(): React.JSX.Element {
+  usePiBridge()
+
   const sidebarCollapsed = useUiStore((state) => state.sidebarCollapsed)
   const diffVisible = useUiStore((state) => state.diffVisible)
 
