@@ -82,6 +82,16 @@ export const projectActions = {
     await projectActions.load()
   },
 
+  activeProject: (): Project | undefined => {
+    const { projects, sessions, activeSessionPath } = useProjectsStore.getState()
+    for (const project of projects) {
+      if ((sessions[project.id] ?? []).some((session) => session.path === activeSessionPath)) {
+        return project
+      }
+    }
+    return projects.find((project) => project.available)
+  },
+
   toggle: (projectId: string): void =>
     useProjectsStore.setState((state) => ({
       expanded: { ...state.expanded, [projectId]: !state.expanded[projectId] }

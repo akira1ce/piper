@@ -30,7 +30,12 @@ export function Sider(): React.JSX.Element {
           />
         ))}
         {projects.length === 0 && !loading && (
-          <p className="text-accent-neutral px-2 py-3 text-xs">还没有项目</p>
+          <div className="px-2 py-3">
+            <p className="text-xs">还没有项目</p>
+            <p className="text-accent-neutral mt-1 text-[11px]">
+              点下方「添加项目」选一个目录，会话会按项目归类。
+            </p>
+          </div>
         )}
       </div>
 
