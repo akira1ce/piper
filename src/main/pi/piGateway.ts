@@ -53,6 +53,8 @@ export class PiGateway {
         })
       case 'abort':
         return this.requireClient().request({ type: 'abort' })
+      case 'abortRetry':
+        return this.requireClient().request({ type: 'abort_retry' })
       case 'clearQueue':
         return this.requireClient().request({ type: 'clear_queue' })
       case 'messages':

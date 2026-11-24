@@ -14,6 +14,7 @@ const COMMANDS = new Set<PiCommand['type']>([
   'stop',
   'prompt',
   'abort',
+  'abortRetry',
   'clearQueue',
   'state',
   'messages',
