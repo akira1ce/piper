@@ -61,7 +61,7 @@ export class SessionIndex {
 
     for (const line of lines) {
       if (!line) continue
-      let entry: any
+      let entry: { type?: string; name?: unknown; message?: { role?: string; content?: unknown } }
       try {
         entry = JSON.parse(line)
       } catch {
@@ -110,7 +110,10 @@ function toText(content: unknown): string {
   if (typeof content === 'string') return content
   if (Array.isArray(content)) {
     return content
-      .map((block: any) => (typeof block?.text === 'string' ? block.text : ''))
+      .map((block) => {
+        const text = (block as { text?: unknown } | null)?.text
+        return typeof text === 'string' ? text : ''
+      })
       .filter(Boolean)
       .join(' ')
   }

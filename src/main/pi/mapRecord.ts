@@ -1,5 +1,7 @@
 import type { DomainEvent, ExtensionUiRequest, ThinkingLevel } from '@shared/piProtocol'
 
+// RPC records are heterogeneous by design; callers only read known fields.
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 type Record_ = Record<string, any>
 
 export function mapRecord(record: Record_): DomainEvent[] {

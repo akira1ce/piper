@@ -190,7 +190,12 @@ function toMessageView(raw: unknown): MessageView {
 function toText(value: unknown): string {
   if (typeof value === 'string') return value
   if (Array.isArray(value)) {
-    return value.map((block: any) => (typeof block?.text === 'string' ? block.text : '')).join('')
+    return value
+      .map((block) => {
+        const text = (block as { text?: unknown } | null)?.text
+        return typeof text === 'string' ? text : ''
+      })
+      .join('')
   }
   if (value && typeof value === 'object' && 'content' in value) {
     return toText((value as { content: unknown }).content)
