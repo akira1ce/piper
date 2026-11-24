@@ -3,9 +3,12 @@ import { useEffect, useMemo } from 'react'
 import { Button } from '@renderer/components/ui/button'
 import { chatActions, useChatStore } from '../../store/chat'
 import { Composer } from './Composer'
+import { ExtensionDialog } from './ExtensionDialog'
+import { ModelPicker } from './ModelPicker'
 import { MessageList } from './MessageList'
 import { QueueChips } from './QueueChips'
 import { StatsBar } from './StatsBar'
+import { ThinkingPicker } from './ThinkingPicker'
 import { useProjectsStore } from '../../store/projects'
 import { uiActions, useUiStore } from '../../store/ui'
 
@@ -16,6 +19,7 @@ export function Chat(): React.JSX.Element {
   const banner = useChatStore((state) => state.banner)
   const retryAttempt = useChatStore((state) => state.retryAttempt)
   const sessionPath = useChatStore((state) => state.sessionPath)
+  const extensionStatus = useChatStore((state) => state.extensionStatus)
   const activeSessionPath = useProjectsStore((state) => state.activeSessionPath)
   const sessions = useProjectsStore((state) => state.sessions)
   const title = useMemo(() => {
@@ -29,6 +33,10 @@ export function Chat(): React.JSX.Element {
   useEffect(() => {
     if (status === 'idle' && sessionPath) void chatActions.loadStats()
   }, [status, sessionPath])
+
+  useEffect(() => {
+    if (sessionPath) void chatActions.loadMeta()
+  }, [sessionPath])
 
   return (
     <div className="flex h-full min-w-0 flex-col">
@@ -66,6 +74,9 @@ export function Chat(): React.JSX.Element {
                   ? '连接异常'
                   : '空闲'}
           </span>
+          {extensionStatus && (
+            <span className="text-accent-neutral shrink-0 truncate">{extensionStatus}</span>
+          )}
           {retryAttempt !== null && (
             <button
               type="button"
@@ -76,7 +87,11 @@ export function Chat(): React.JSX.Element {
             </button>
           )}
         </div>
-        <StatsBar />
+        <div className="flex shrink-0 items-center gap-2">
+          <ModelPicker />
+          <ThinkingPicker />
+          <StatsBar />
+        </div>
       </div>
       {banner && <div className="text-accent-rose px-3 py-1 text-[11px]">{banner.text}</div>}
 
@@ -85,6 +100,8 @@ export function Chat(): React.JSX.Element {
       <QueueChips />
 
       <Composer />
+
+      <ExtensionDialog />
     </div>
   )
 }
