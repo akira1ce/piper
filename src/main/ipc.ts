@@ -1,10 +1,11 @@
 import { stat } from 'node:fs/promises'
-import { BrowserWindow, dialog, ipcMain, type OpenDialogOptions } from 'electron'
+import { BrowserWindow, dialog, ipcMain, shell, type OpenDialogOptions } from 'electron'
 import type { PiCommand, PiResult } from '@shared/piProtocol'
 import type { PiGateway } from './pi/piGateway'
 import type { SessionIndex } from './pi/sessionIndex'
 import type { ProjectRegistry } from './projects'
 import type { AppStateStore } from './appState'
+import { isInsideSessionsDir } from './ipcPaths'
 
 export const INVOKE_CHANNEL = 'piper:invoke'
 export const EVENT_CHANNEL = 'piper:event'
@@ -34,6 +35,7 @@ const COMMANDS = new Set<PiCommand['type']>([
   'pickDirectory',
   'lastSession',
   'rememberSession',
+  'deleteSession',
   'extensionRespond'
 ])
 
@@ -48,6 +50,7 @@ export interface IpcDeps {
   sessions: SessionIndex
   projects: ProjectRegistry
   appState: AppStateStore
+  sessionsDir: string
   getWindow: () => BrowserWindow | null
 }
 
@@ -97,6 +100,12 @@ async function route(deps: IpcDeps, command: PiCommand): Promise<PiResult> {
     case 'prompt':
       if (!command.text.trim()) return { ok: false, error: '消息不能为空' }
       return deps.gateway.handle(command)
+    case 'deleteSession':
+      if (!isInsideSessionsDir(command.sessionPath, deps.sessionsDir)) {
+        return { ok: false, error: '非法会话路径' }
+      }
+      await shell.trashItem(command.sessionPath)
+      return { ok: true, data: null }
     case 'lastSession':
       return { ok: true, data: await deps.appState.get() }
     case 'rememberSession':
