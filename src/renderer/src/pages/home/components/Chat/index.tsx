@@ -1,6 +1,8 @@
 import { ArrowUp, PanelLeft, PanelRight } from 'lucide-react'
+import { useMemo } from 'react'
 import { Button } from '@renderer/components/ui/button'
 import { useChatStore } from '../../store/chat'
+import { useProjectsStore } from '../../store/projects'
 import { uiActions, useUiStore } from '../../store/ui'
 
 export function Chat(): React.JSX.Element {
@@ -8,6 +10,15 @@ export function Chat(): React.JSX.Element {
   const diffVisible = useUiStore((state) => state.diffVisible)
   const status = useChatStore((state) => state.status)
   const banner = useChatStore((state) => state.banner)
+  const activeSessionPath = useProjectsStore((state) => state.activeSessionPath)
+  const sessions = useProjectsStore((state) => state.sessions)
+  const title = useMemo(() => {
+    for (const list of Object.values(sessions)) {
+      const found = list.find((session) => session.path === activeSessionPath)
+      if (found) return found.name || found.firstMessage || '会话'
+    }
+    return '新会话'
+  }, [sessions, activeSessionPath])
 
   return (
     <div className="flex h-full min-w-0 flex-col">
@@ -21,7 +32,7 @@ export function Chat(): React.JSX.Element {
         >
           <PanelLeft />
         </Button>
-        <span className="text-accent-neutral ml-1 text-xs">新会话</span>
+        <span className="text-accent-neutral ml-1 truncate text-xs">{title}</span>
         <div className="flex-1" />
         <Button
           variant="ghost"
