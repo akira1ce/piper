@@ -6,6 +6,7 @@ import type {
   ThinkingLevel,
   ToolCallView
 } from '@shared/piProtocol'
+import { messageToView, toText } from './messagesToView'
 
 export interface ChatView {
   status: 'idle' | 'running' | 'compacting' | 'reconnecting' | 'error'
@@ -63,9 +64,22 @@ function applyEvent(view: ChatView, event: DomainEvent): void {
         }
       }
       return
-    case 'message_start':
-      view.messages.push(toMessageView(event.message))
+    case 'message_start': {
+      const message = messageToView(event.message, view.messages.length, view.toolCalls)
+      if (message) view.messages.push(message)
       return
+    }
+    case 'message_end': {
+      const message = messageToView(event.message, view.messages.length, view.toolCalls)
+      if (!message) return
+      const last = lastByRole(view, message.role)
+      if (last) {
+        last.blocks = message.blocks
+      } else {
+        view.messages.push({ ...message, id: `m_${view.messages.length}` })
+      }
+      return
+    }
     case 'delta':
       applyDelta(view, event)
       return
@@ -172,33 +186,12 @@ function ensureBlock(
 }
 
 function lastAssistant(view: ChatView): MessageView | undefined {
+  return lastByRole(view, 'assistant')
+}
+
+function lastByRole(view: ChatView, role: MessageView['role']): MessageView | undefined {
   for (let i = view.messages.length - 1; i >= 0; i -= 1) {
-    if (view.messages[i].role === 'assistant') return view.messages[i]
+    if (view.messages[i].role === role) return view.messages[i]
   }
   return undefined
-}
-
-function toMessageView(raw: unknown): MessageView {
-  const message = raw as { id?: string; role?: string }
-  return {
-    id: message.id ?? `msg_${Math.random().toString(36).slice(2, 10)}`,
-    role: message.role === 'user' ? 'user' : 'assistant',
-    blocks: []
-  }
-}
-
-function toText(value: unknown): string {
-  if (typeof value === 'string') return value
-  if (Array.isArray(value)) {
-    return value
-      .map((block) => {
-        const text = (block as { text?: unknown } | null)?.text
-        return typeof text === 'string' ? text : ''
-      })
-      .join('')
-  }
-  if (value && typeof value === 'object' && 'content' in value) {
-    return toText((value as { content: unknown }).content)
-  }
-  return ''
 }
