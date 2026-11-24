@@ -2,21 +2,23 @@ import { Pencil, Trash2 } from 'lucide-react'
 import { Dialog } from 'radix-ui'
 import { useState } from 'react'
 import type { JSX } from 'react'
+import type { SessionSummary } from '@shared/piProtocol'
 import { Button } from '@renderer/components/ui/button'
-import { chatActions, useChatStore } from '../../store/chat'
-import { projectActions } from '../../store/projects'
+import { cn } from '@renderer/lib/utils'
+import { chatActions } from '../../store/chat'
+import { projectActions, useProjectsStore } from '../../store/projects'
 
-interface SessionActionsProps {
-  currentName: string
+interface SessionRowProps {
+  projectId: string
+  session: SessionSummary
+  active: boolean
+  onOpen: () => void
 }
 
-export function SessionActions({ currentName }: SessionActionsProps): JSX.Element | null {
-  const sessionPath = useChatStore((state) => state.sessionPath)
+export function SessionRow({ projectId, session, active, onOpen }: SessionRowProps): JSX.Element {
   const [renameOpen, setRenameOpen] = useState(false)
   const [deleteOpen, setDeleteOpen] = useState(false)
-  const [name, setName] = useState(currentName)
-
-  if (!sessionPath) return null
+  const [name, setName] = useState(session.name ?? session.firstMessage)
 
   const rename = async (): Promise<void> => {
     const value = name.trim()
@@ -24,40 +26,57 @@ export function SessionActions({ currentName }: SessionActionsProps): JSX.Elemen
     const result = await window.api.pi.invoke({ type: 'renameSession', name: value })
     if (!result.ok) return
     setRenameOpen(false)
-    await projectActions.load()
+    await projectActions.loadSessions(projectId)
   }
 
   const remove = async (): Promise<void> => {
-    const result = await window.api.pi.invoke({ type: 'deleteSession', sessionPath })
+    const result = await window.api.pi.invoke({ type: 'deleteSession', sessionPath: session.path })
     if (!result.ok) return
     setDeleteOpen(false)
-    chatActions.reset()
-    await projectActions.load()
+    const { activeSessionPath } = useProjectsStore.getState()
+    if (activeSessionPath === session.path) {
+      chatActions.reset()
+      useProjectsStore.setState({ activeSessionPath: null })
+    }
+    await projectActions.loadSessions(projectId)
   }
 
   return (
-    <>
-      <Button
-        variant="ghost"
-        size="icon-sm"
-        className="text-accent-neutral"
-        aria-label="重命名会话"
-        onClick={() => {
-          setName(currentName)
-          setRenameOpen(true)
-        }}
+    <div className="group/row relative">
+      <button
+        type="button"
+        data-session-path={session.path}
+        onClick={onOpen}
+        className={cn(
+          'text-fore/80 hover:bg-card-hover w-full truncate rounded py-1.5 pr-14 pl-2 text-left text-xs',
+          active && 'bg-card-hover text-fore'
+        )}
+        title={session.name ?? session.firstMessage}
       >
-        <Pencil />
-      </Button>
-      <Button
-        variant="ghost"
-        size="icon-sm"
-        className="text-accent-neutral"
-        aria-label="删除会话"
-        onClick={() => setDeleteOpen(true)}
-      >
-        <Trash2 />
-      </Button>
+        {session.name || session.firstMessage || '未命名会话'}
+      </button>
+
+      <div className="bg-card-hover absolute top-1/2 right-1 flex -translate-y-1/2 items-center gap-0.5 rounded px-0.5 opacity-0 group-hover/row:opacity-100">
+        <button
+          type="button"
+          aria-label="重命名会话"
+          onClick={() => {
+            setName(session.name ?? session.firstMessage)
+            setRenameOpen(true)
+          }}
+          className="text-accent-neutral hover:text-fore p-0.5"
+        >
+          <Pencil className="size-3" />
+        </button>
+        <button
+          type="button"
+          aria-label="删除会话"
+          onClick={() => setDeleteOpen(true)}
+          className="text-accent-neutral hover:text-accent-rose p-0.5"
+        >
+          <Trash2 className="size-3" />
+        </button>
+      </div>
 
       <Dialog.Root open={renameOpen} onOpenChange={setRenameOpen}>
         <Dialog.Portal>
@@ -108,6 +127,6 @@ export function SessionActions({ currentName }: SessionActionsProps): JSX.Elemen
           </Dialog.Content>
         </Dialog.Portal>
       </Dialog.Root>
-    </>
+    </div>
   )
 }
