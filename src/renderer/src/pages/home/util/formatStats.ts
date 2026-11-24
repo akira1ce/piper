@@ -12,5 +12,6 @@ export function formatCost(value: number): string {
 
 export function formatContext(usage: NonNullable<SessionStats['contextUsage']>): string {
   if (usage.tokens === null || usage.percent === null) return '—'
-  return `${formatTokens(usage.tokens)} / ${formatTokens(usage.contextWindow)} · ${usage.percent}%`
+  const percent = Number(usage.percent.toFixed(1))
+  return `${formatTokens(usage.tokens)} / ${formatTokens(usage.contextWindow)} · ${percent}%`
 }

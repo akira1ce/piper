@@ -132,6 +132,7 @@ export type PiCommand =
   | { type: 'stop' }
   | { type: 'prompt'; text: string; behavior?: 'steer' | 'followUp' }
   | { type: 'abort' }
+  | { type: 'abortRetry' }
   | { type: 'clearQueue' }
   | { type: 'state' }
   | { type: 'messages' }

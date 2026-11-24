@@ -99,6 +99,16 @@ describe('reduceBatch', () => {
     expect(view.messages).toHaveLength(0)
   })
 
+  it('tracks retry attempts until success', () => {
+    let view = reduceBatch(
+      initialChatView(),
+      batch([{ type: 'retry', phase: 'start', attempt: 2 }])
+    )
+    expect(view.retryAttempt).toBe(2)
+    view = reduceBatch(view, batch([{ type: 'retry', phase: 'end', success: true }], 2))
+    expect(view.retryAttempt).toBeNull()
+  })
+
   it('rejects stale batches', () => {
     const view = reduceBatch(initialChatView(), batch([{ type: 'agent_start' }], 5))
     const next = reduceBatch(view, batch([{ type: 'settled', aborted: false }], 4))

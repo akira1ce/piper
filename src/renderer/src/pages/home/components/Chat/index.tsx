@@ -1,9 +1,11 @@
 import { PanelLeft, PanelRight } from 'lucide-react'
-import { useMemo } from 'react'
+import { useEffect, useMemo } from 'react'
 import { Button } from '@renderer/components/ui/button'
-import { useChatStore } from '../../store/chat'
+import { chatActions, useChatStore } from '../../store/chat'
 import { Composer } from './Composer'
 import { MessageList } from './MessageList'
+import { QueueChips } from './QueueChips'
+import { StatsBar } from './StatsBar'
 import { useProjectsStore } from '../../store/projects'
 import { uiActions, useUiStore } from '../../store/ui'
 
@@ -12,6 +14,8 @@ export function Chat(): React.JSX.Element {
   const diffVisible = useUiStore((state) => state.diffVisible)
   const status = useChatStore((state) => state.status)
   const banner = useChatStore((state) => state.banner)
+  const retryAttempt = useChatStore((state) => state.retryAttempt)
+  const sessionPath = useChatStore((state) => state.sessionPath)
   const activeSessionPath = useProjectsStore((state) => state.activeSessionPath)
   const sessions = useProjectsStore((state) => state.sessions)
   const title = useMemo(() => {
@@ -21,6 +25,10 @@ export function Chat(): React.JSX.Element {
     }
     return '新会话'
   }, [sessions, activeSessionPath])
+
+  useEffect(() => {
+    if (status === 'idle' && sessionPath) void chatActions.loadStats()
+  }, [status, sessionPath])
 
   return (
     <div className="flex h-full min-w-0 flex-col">
@@ -47,18 +55,34 @@ export function Chat(): React.JSX.Element {
         </Button>
       </header>
 
-      <div className="text-accent-neutral px-3 py-1 text-[11px]">
-        {status === 'running'
-          ? '运行中'
-          : status === 'compacting'
-            ? '压缩上下文中'
-            : status === 'error'
-              ? '连接异常'
-              : '空闲'}
+      <div className="text-accent-neutral flex items-center justify-between gap-2 px-3 py-1 text-[11px]">
+        <div className="flex min-w-0 items-center gap-2">
+          <span className="shrink-0">
+            {status === 'running'
+              ? '运行中'
+              : status === 'compacting'
+                ? '压缩上下文中'
+                : status === 'error'
+                  ? '连接异常'
+                  : '空闲'}
+          </span>
+          {retryAttempt !== null && (
+            <button
+              type="button"
+              onClick={() => void chatActions.abortRetry()}
+              className="text-accent-sky hover:text-fore shrink-0 underline underline-offset-2"
+            >
+              中止重试（第 {retryAttempt} 次）
+            </button>
+          )}
+        </div>
+        <StatsBar />
       </div>
       {banner && <div className="text-accent-rose px-3 py-1 text-[11px]">{banner.text}</div>}
 
       <MessageList />
+
+      <QueueChips />
 
       <Composer />
     </div>

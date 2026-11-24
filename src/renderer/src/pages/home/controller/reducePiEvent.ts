@@ -3,6 +3,7 @@ import type {
   MessageBlock,
   MessageView,
   PiBatch,
+  SessionStats,
   ThinkingLevel,
   ToolCallView
 } from '@shared/piProtocol'
@@ -17,6 +18,8 @@ export interface ChatView {
   toolCalls: Record<string, ToolCallView>
   queue: { steering: string[]; followUp: string[] }
   banner: { kind: 'error' | 'info'; text: string } | null
+  retryAttempt: number | null
+  stats: SessionStats | null
 }
 
 export function initialChatView(): ChatView {
@@ -28,7 +31,9 @@ export function initialChatView(): ChatView {
     messages: [],
     toolCalls: {},
     queue: { steering: [], followUp: [] },
-    banner: null
+    banner: null,
+    retryAttempt: null,
+    stats: null
   }
 }
 
@@ -58,6 +63,7 @@ function applyEvent(view: ChatView, event: DomainEvent): void {
       return
     case 'settled':
       view.status = 'idle'
+      view.retryAttempt = null
       for (const [id, tool] of Object.entries(view.toolCalls)) {
         if (tool.state === 'running' || tool.state === 'pending') {
           view.toolCalls[id] = { ...tool, state: 'done' }
@@ -127,6 +133,7 @@ function applyEvent(view: ChatView, event: DomainEvent): void {
       view.status = event.phase === 'start' ? 'compacting' : 'running'
       return
     case 'retry':
+      view.retryAttempt = event.phase === 'start' ? (event.attempt ?? 1) : null
       view.banner =
         event.phase === 'start'
           ? { kind: 'info', text: `重试中（第 ${event.attempt ?? 1} 次）` }

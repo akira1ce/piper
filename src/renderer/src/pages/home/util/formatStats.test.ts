@@ -18,5 +18,8 @@ describe('formatStats', () => {
       '60k / 200k · 30%'
     )
     expect(formatContext({ tokens: null, contextWindow: 200_000, percent: null })).toBe('—')
+    expect(formatContext({ tokens: 23_100, contextWindow: 1_000_000, percent: 2.3073 })).toBe(
+      '23.1k / 1000k · 2.3%'
+    )
   })
 })
