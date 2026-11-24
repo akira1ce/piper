@@ -153,6 +153,7 @@ export type PiCommand =
   | { type: 'renameProject'; projectId: string; name: string }
   | { type: 'pickDirectory' }
   | { type: 'deleteSession'; sessionPath: string }
+  | { type: 'setTheme'; theme: 'light' | 'dark' }
   | { type: 'lastSession' }
   | { type: 'rememberSession'; projectId: string; sessionPath: string }
   | {

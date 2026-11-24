@@ -1,5 +1,6 @@
-import { Plus, RefreshCw } from 'lucide-react'
+import { Moon, Plus, RefreshCw, Sun } from 'lucide-react'
 import { Button } from '@renderer/components/ui/button'
+import { themeActions, useThemeStore } from '@renderer/store/theme'
 import { projectActions, useProjectsStore } from '../../store/projects'
 import { ProjectGroup } from './ProjectGroup'
 
@@ -9,11 +10,21 @@ export function Sider(): React.JSX.Element {
   const expanded = useProjectsStore((state) => state.expanded)
   const activeSessionPath = useProjectsStore((state) => state.activeSessionPath)
   const loading = useProjectsStore((state) => state.loading)
+  const theme = useThemeStore((state) => state.resolved)
 
   return (
     <div className="bg-card flex h-full flex-col">
-      <div className="window-drag flex h-12 shrink-0 items-center gap-2 pr-2 pl-[var(--titlebar-inset)]">
+      <div className="window-drag flex h-12 shrink-0 items-center justify-between gap-2 pr-2 pl-[var(--titlebar-inset)]">
         <span className="text-sm font-medium">Piper</span>
+        <Button
+          variant="ghost"
+          size="icon-sm"
+          className="text-accent-neutral window-no-drag"
+          aria-label={theme === 'dark' ? '切换到浅色' : '切换到深色'}
+          onClick={themeActions.toggle}
+        >
+          {theme === 'dark' ? <Sun /> : <Moon />}
+        </Button>
       </div>
 
       <div className="flex-1 overflow-y-auto px-2 py-1">

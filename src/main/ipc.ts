@@ -1,5 +1,12 @@
 import { stat } from 'node:fs/promises'
-import { BrowserWindow, dialog, ipcMain, shell, type OpenDialogOptions } from 'electron'
+import {
+  BrowserWindow,
+  dialog,
+  ipcMain,
+  nativeTheme,
+  shell,
+  type OpenDialogOptions
+} from 'electron'
 import type { PiCommand, PiResult } from '@shared/piProtocol'
 import type { PiGateway } from './pi/piGateway'
 import type { SessionIndex } from './pi/sessionIndex'
@@ -36,6 +43,7 @@ const COMMANDS = new Set<PiCommand['type']>([
   'lastSession',
   'rememberSession',
   'deleteSession',
+  'setTheme',
   'extensionRespond'
 ])
 
@@ -100,6 +108,12 @@ async function route(deps: IpcDeps, command: PiCommand): Promise<PiResult> {
     case 'prompt':
       if (!command.text.trim()) return { ok: false, error: '消息不能为空' }
       return deps.gateway.handle(command)
+    case 'setTheme': {
+      nativeTheme.themeSource = command.theme
+      const color = command.theme === 'dark' ? '#0c0c14' : '#ffffff'
+      for (const window of BrowserWindow.getAllWindows()) window.setBackgroundColor(color)
+      return { ok: true, data: null }
+    }
     case 'deleteSession':
       if (!isInsideSessionsDir(command.sessionPath, deps.sessionsDir)) {
         return { ok: false, error: '非法会话路径' }

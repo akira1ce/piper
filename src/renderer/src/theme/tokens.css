@@ -1,6 +1,25 @@
-/* Piper 语义 token —— 唯一色彩源。v1 只有 dark。 */
+/* Piper 语义 token —— 唯一色彩源。默认 light，`.dark` 覆盖为深色。 */
 @layer base {
   :root {
+    --bg-main: #ffffff;
+    --bg-fore: #171717;
+    --bg-card: #fafafa;
+    --bg-card-hover: #f0f0f0;
+
+    --accent-sky: #0284c7;
+    --accent-violet: #7c3aed;
+    --accent-amber: #d97706;
+    --accent-rose: #e11d48;
+    --accent-emerald: #059669;
+    --accent-cyan: #0891b2;
+    --accent-slate: #475569;
+    --accent-neutral: #a3a3a3;
+
+    --brand: #c2603f;
+    --brand-fore: #ffffff;
+  }
+
+  .dark {
     --bg-main: #0c0c14;
     --bg-fore: #e8e4dd;
     --bg-card: #161625;
@@ -20,7 +39,7 @@
   }
 
   html {
-    color-scheme: dark;
+    color-scheme: light;
     height: 100%;
     font-family:
       'LXGW WenKai',
@@ -31,6 +50,10 @@
       'Hiragino Sans GB',
       'Microsoft YaHei',
       sans-serif;
+  }
+
+  html.dark {
+    color-scheme: dark;
   }
 
   body {
