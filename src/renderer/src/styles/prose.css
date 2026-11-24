@@ -36,3 +36,11 @@
   border: 1px solid var(--bg-card-hover);
   border-radius: 8px;
 }
+
+.prose table {
+  font-size: 0.8125rem;
+}
+
+.prose a {
+  text-underline-offset: 2px;
+}

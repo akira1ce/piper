@@ -1,5 +1,6 @@
 @import 'tailwindcss';
 @import 'tw-animate-css';
+@import 'streamdown/styles.css';
 @import '../theme/tokens.css';
 @import './shadcn.css';
 @import './prose.css';
@@ -28,3 +29,6 @@
 [data-os='darwin'] .window-no-drag {
   -webkit-app-region: no-drag;
 }
+
+@source '../../../../node_modules/streamdown/dist/*.js';
+@source '../../../../node_modules/@streamdown/code/dist/*.js';

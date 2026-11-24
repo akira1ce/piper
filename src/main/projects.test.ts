@@ -32,6 +32,15 @@ describe('ProjectRegistry', () => {
     await expect(registry.add('/definitely/not/here')).rejects.toThrow('目录不存在')
   })
 
+  it('reloads persisted projects in a fresh instance', async () => {
+    const { dir, file, registry } = await setup()
+    const project = await registry.add(dir)
+    const reopened = new ProjectRegistry({ filePath: file })
+    const projects = await reopened.list()
+    expect(projects).toHaveLength(1)
+    expect(projects[0]).toMatchObject({ id: project.id, path: await realpath(dir) })
+  })
+
   it('renames without touching disk', async () => {
     const { dir, registry } = await setup()
     const project = await registry.add(dir)

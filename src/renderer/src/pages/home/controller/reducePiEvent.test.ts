@@ -57,6 +57,48 @@ describe('reduceBatch', () => {
     expect(view.status).toBe('idle')
   })
 
+  it('replaces the streaming message on message_end', () => {
+    let view = initialChatView()
+    view = reduceBatch(
+      view,
+      batch([
+        { type: 'message_start', message: { role: 'assistant', content: [] } },
+        { type: 'delta', kind: 'text', contentIndex: 0, text: 'partial' }
+      ])
+    )
+    view = reduceBatch(
+      view,
+      batch(
+        [
+          {
+            type: 'message_end',
+            message: {
+              role: 'assistant',
+              content: [
+                { type: 'thinking', thinking: '想' },
+                { type: 'text', text: '权威文本' }
+              ]
+            }
+          }
+        ],
+        2
+      )
+    )
+    expect(view.messages[0].blocks.map((block) => block.kind)).toEqual(['thinking', 'text'])
+    expect(view.messages[0].blocks[1].text).toBe('权威文本')
+  })
+
+  it('ignores toolResult and system messages', () => {
+    const view = reduceBatch(
+      initialChatView(),
+      batch([
+        { type: 'message_start', message: { role: 'toolResult', content: 'x' } },
+        { type: 'message_end', message: { role: 'system', content: 'y' } }
+      ])
+    )
+    expect(view.messages).toHaveLength(0)
+  })
+
   it('rejects stale batches', () => {
     const view = reduceBatch(initialChatView(), batch([{ type: 'agent_start' }], 5))
     const next = reduceBatch(view, batch([{ type: 'settled', aborted: false }], 4))

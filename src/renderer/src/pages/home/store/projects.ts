@@ -18,6 +18,8 @@ export const useProjectsStore = create<ProjectsState>(() => ({
   loading: false
 }))
 
+let restored = false
+
 export const projectActions = {
   load: async (): Promise<void> => {
     useProjectsStore.setState({ loading: true })
@@ -36,6 +38,24 @@ export const projectActions = {
       }
     }))
     await Promise.all(projects.map((project) => projectActions.loadSessions(project.id)))
+    await projectActions.restoreLastSession()
+  },
+
+  restoreLastSession: async (): Promise<void> => {
+    if (restored) return
+    restored = true
+    const result = await window.api.pi.invoke({ type: 'lastSession' })
+    if (!result.ok) return
+    const state = result.data as { lastProjectId?: string; lastSessionPath?: string }
+    if (!state.lastProjectId || !state.lastSessionPath) return
+    const project = useProjectsStore
+      .getState()
+      .projects.find((item) => item.id === state.lastProjectId)
+    if (!project?.available) return
+    const sessions = useProjectsStore.getState().sessions[project.id] ?? []
+    const session = sessions.find((item) => item.path === state.lastSessionPath)
+    if (!session) return
+    await projectActions.openSession(project, session)
   },
 
   loadSessions: async (projectId: string): Promise<void> => {
@@ -71,6 +91,20 @@ export const projectActions = {
     // 不带 --session 启动 pi 本身就会创建新会话，无需再发 new_session
     const result = await window.api.pi.invoke({ type: 'start', cwd: project.path })
     if (!result.ok) return
+    const state = await window.api.pi.invoke({ type: 'state' })
+    if (state.ok) {
+      const data = state.data as { sessionFile?: string }
+      chatActions.reset()
+      chatActions.setSession(data.sessionFile ?? null)
+      useProjectsStore.setState({ activeSessionPath: data.sessionFile ?? null })
+      if (data.sessionFile) {
+        await window.api.pi.invoke({
+          type: 'rememberSession',
+          projectId: project.id,
+          sessionPath: data.sessionFile
+        })
+      }
+    }
     await projectActions.loadSessions(project.id)
   },
 
@@ -89,5 +123,14 @@ export const projectActions = {
       const data = state.data as { sessionFile?: string }
       useProjectsStore.setState({ activeSessionPath: data.sessionFile ?? session.path })
     }
+    const messages = await window.api.pi.invoke({ type: 'messages' })
+    if (messages.ok) {
+      chatActions.loadMessages((messages.data as { messages: unknown[] }).messages)
+    }
+    await window.api.pi.invoke({
+      type: 'rememberSession',
+      projectId: project.id,
+      sessionPath: useProjectsStore.getState().activeSessionPath ?? session.path
+    })
   }
 }
