@@ -18,7 +18,7 @@ Piper 是 pi 的 GUI 客户端（Electron + React + Tailwind + Radix + zustand�
 - 跨页面复用的组件才进 `src/renderer/src/components`；shadcn 组件只放 `components/ui`。
 - 跨页面共享的状态才进 `src/renderer/src/store`。
 - 页面内部实现不外传：其他页面只通过页面入口文件使用它，不直接 import 内部文件。
-- 样式分片放 `src/renderer/src/styles`，由 `main.css` 统一 `@import`；markdown/prose 这类模块样式单独成文件，不揉进主 css。
+- 样式分片放 `src/renderer/src/styles`，由 `main.css` 统一 `@import`；markdown 这类模块样式放 `styles/modules/<page>.css`，不揉进主 css。
 
 ## 命名
 
