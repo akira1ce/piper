@@ -1,0 +1,8 @@
+/* Streamdown 内部对代码块按钮组硬编码了 border/bg/backdrop；这里只去掉容器装饰，
+   按钮尺寸、间距与 hover 全部保持库默认，作用域限定在聊天 Markdown。 */
+.chat-markdown [data-streamdown='code-block-actions'] {
+  padding: 0;
+  border: 0;
+  background: transparent;
+  backdrop-filter: none;
+}
