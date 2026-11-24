@@ -1,3 +1,4 @@
+/* eslint-disable react-refresh/only-export-components -- shadcn pattern: variants live with the component */
 import { cva, type VariantProps } from 'class-variance-authority'
 import { Slot } from 'radix-ui'
 import type { ComponentProps, JSX } from 'react'

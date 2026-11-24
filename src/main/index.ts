@@ -1,7 +1,15 @@
 import { app, shell, BrowserWindow, session } from 'electron'
-import { join } from 'path'
+import { execFile } from 'node:child_process'
+import { accessSync } from 'node:fs'
+import { join } from 'node:path'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 import icon from '../../resources/icon.png?asset'
+import { PiGateway } from './pi/piGateway'
+import { PiProcess } from './pi/piProcess'
+import { isVersionSupported, resolvePiPath } from './pi/resolvePi'
+import { resolveSessionsDir, SessionIndex } from './pi/sessionIndex'
+import { ProjectRegistry } from './projects'
+import { registerPiIpc, EVENT_CHANNEL } from './ipc'
 
 function createWindow(): void {
   const mainWindow = new BrowserWindow({
@@ -64,6 +72,20 @@ app.whenReady().then(() => {
     optimizer.watchWindowShortcuts(window)
   })
 
+  const gateway = createGateway()
+  app.on('before-quit', () => {
+    void gateway.handle({ type: 'stop' })
+  })
+
+  registerPiIpc({
+    gateway,
+    sessions: new SessionIndex({ sessionsDir: resolveSessionsDir(process.env) }),
+    projects: new ProjectRegistry({
+      filePath: join(app.getPath('userData'), 'projects.json')
+    }),
+    getWindow: () => BrowserWindow.getAllWindows()[0] ?? null
+  })
+
   createWindow()
 
   app.on('activate', () => {
@@ -76,3 +98,40 @@ app.on('window-all-closed', () => {
     app.quit()
   }
 })
+
+function createGateway(): PiGateway {
+  return new PiGateway({
+    openProcess: (options) => PiProcess.spawn(options),
+    resolvePi: async () => {
+      const command = resolvePiPath({
+        env: process.env,
+        pathEnv: process.env.PATH ?? '',
+        exists: (candidate) => {
+          try {
+            accessSync(candidate)
+            return true
+          } catch {
+            return false
+          }
+        }
+      })
+      if (!command) throw new Error('未找到 pi，请先安装 @earendil-works/pi-coding-agent')
+      const version = await new Promise<string>((resolve, reject) => {
+        execFile(command, ['--version'], (error, stdout) => {
+          if (error) reject(error)
+          else resolve(stdout.trim())
+        })
+      })
+      return {
+        command,
+        version,
+        warning: isVersionSupported(version) ? undefined : `pi 版本 ${version} 低于 1.6.0`
+      }
+    },
+    emit: (batch) => {
+      for (const window of BrowserWindow.getAllWindows()) {
+        window.webContents.send(EVENT_CHANNEL, batch)
+      }
+    }
+  })
+}
