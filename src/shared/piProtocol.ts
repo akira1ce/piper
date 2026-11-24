@@ -18,6 +18,21 @@ export interface SessionSummary {
   firstMessage: string
 }
 
+export interface SessionStats {
+  userMessages?: number
+  assistantMessages?: number
+  toolCalls?: number
+  tokens?: {
+    input: number
+    output: number
+    cacheRead: number
+    cacheWrite: number
+    total: number
+  }
+  cost?: number
+  contextUsage?: { tokens: number | null; contextWindow: number; percent: number | null }
+}
+
 export interface Project {
   id: string
   path: string
