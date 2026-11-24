@@ -1,0 +1,30 @@
+@import 'tailwindcss';
+@import 'tw-animate-css';
+@import '../theme/tokens.css';
+@import './shadcn.css';
+@import './prose.css';
+
+@plugin '@tailwindcss/typography';
+
+/* dark-mode -> class: dark */
+@custom-variant dark (&:where(.dark, .dark *));
+
+/* 组件在 components / modules / lib / stores 里，显式声明扫描范围 */
+@source '../**/*.{ts,tsx}';
+
+:root {
+  --titlebar-inset: 12px;
+}
+
+[data-os='darwin'] {
+  --titlebar-inset: 78px;
+}
+
+/* 自定义标题栏：只有 macOS 走 hiddenInset，拖动区只在那里生效 */
+[data-os='darwin'] .window-drag {
+  -webkit-app-region: drag;
+}
+
+[data-os='darwin'] .window-no-drag {
+  -webkit-app-region: no-drag;
+}

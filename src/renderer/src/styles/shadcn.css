@@ -1,0 +1,64 @@
+/*
+ * shadcn 语义变量 → Piper token。
+ * 这是唯一允许出现 shadcn 变量名（--background / --primary ...）的文件。
+ * 组件里可以写 bg-background / text-muted-foreground；modules 里只用 Piper token。
+ */
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+}
+
+:root {
+  --background: var(--bg-main);
+  --foreground: var(--bg-fore);
+
+  /* 不重定义 --color-card（tokens.css 已有），这里只补变量与它的前景色 */
+  --card: var(--bg-card);
+  --card-foreground: var(--bg-fore);
+
+  --popover: var(--bg-card);
+  --popover-foreground: var(--bg-fore);
+
+  --primary: var(--brand);
+  --primary-foreground: var(--brand-fore);
+
+  --secondary: var(--bg-card-hover);
+  --secondary-foreground: var(--bg-fore);
+
+  --muted: var(--bg-card);
+  --muted-foreground: var(--accent-neutral);
+
+  /* shadcn 的 accent 是 hover 面，不是我们的 accent-* 色系 */
+  --accent: var(--bg-card-hover);
+  --accent-foreground: var(--bg-fore);
+
+  --destructive: var(--accent-rose);
+  --destructive-foreground: var(--bg-main);
+
+  --border: color-mix(in srgb, var(--bg-fore) 12%, transparent);
+  --input: color-mix(in srgb, var(--bg-fore) 16%, transparent);
+  --ring: var(--brand);
+
+  --radius: 0.5rem;
+}
