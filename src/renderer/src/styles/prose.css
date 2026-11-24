@@ -66,3 +66,34 @@
   border: 0;
   border-radius: 0;
 }
+
+/* Streamdown 代码块右上角操作区：小图标、悬停才出现 */
+[data-streamdown='code-block-actions'] {
+  gap: 0.125rem;
+  opacity: 0;
+  transition: opacity 120ms ease;
+}
+
+[data-streamdown='code-block']:hover [data-streamdown='code-block-actions'],
+[data-streamdown='code-block']:focus-within [data-streamdown='code-block-actions'] {
+  opacity: 1;
+}
+
+[data-streamdown='code-block-actions'] button {
+  width: 1.5rem;
+  height: 1.5rem;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--accent-neutral);
+}
+
+[data-streamdown='code-block-actions'] button:hover {
+  background: var(--bg-card-hover);
+  color: var(--bg-fore);
+}
+
+[data-streamdown='code-block-actions'] button svg {
+  width: 0.875rem;
+  height: 0.875rem;
+}

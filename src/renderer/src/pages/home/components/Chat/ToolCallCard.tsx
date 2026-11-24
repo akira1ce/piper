@@ -35,11 +35,11 @@ export function ToolCallCard({ tool }: ToolCallCardProps): React.JSX.Element {
       </button>
       {open && (
         <div className="space-y-2 px-3 pb-3">
-          <pre className="text-accent-neutral bg-main/60 overflow-x-auto rounded p-2 font-mono text-[11px] whitespace-pre-wrap">
+          <pre className="text-accent-neutral bg-main/60 max-h-72 overflow-auto rounded p-2 font-mono text-[11px] whitespace-pre-wrap">
             {summarizeArgs(tool.args)}
           </pre>
           {tool.preview && (
-            <pre className="text-fore/80 bg-main/60 max-h-64 overflow-auto rounded p-2 font-mono text-[11px] whitespace-pre-wrap">
+            <pre className="text-fore/80 bg-main/60 max-h-72 overflow-auto rounded p-2 font-mono text-[11px] whitespace-pre-wrap">
               {tool.preview}
             </pre>
           )}

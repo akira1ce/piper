@@ -34,7 +34,7 @@ export function MessageList(): React.JSX.Element {
         <button
           type="button"
           onClick={scrollToBottom}
-          className="bg-card border-accent-neutral/30 text-fore hover:bg-card-hover absolute right-4 bottom-4 flex size-8 items-center justify-center rounded-full border shadow"
+          className="bg-card border-accent-neutral/30 text-fore hover:bg-card-hover absolute bottom-4 left-1/2 flex size-8 -translate-x-1/2 items-center justify-center rounded-full border shadow"
           aria-label="回到底部"
         >
           <ArrowDown className="size-4" />
