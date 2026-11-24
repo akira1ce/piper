@@ -1,5 +1,7 @@
 import type {
   DomainEvent,
+  ExtensionUiRequest,
+  ModelInfo,
   MessageBlock,
   MessageView,
   PiBatch,
@@ -20,6 +22,11 @@ export interface ChatView {
   banner: { kind: 'error' | 'info'; text: string } | null
   retryAttempt: number | null
   stats: SessionStats | null
+  model: ModelInfo | null
+  modelList: ModelInfo[]
+  thinkingLevels: ThinkingLevel[]
+  dialogs: ExtensionUiRequest[]
+  extensionStatus: string | null
 }
 
 export function initialChatView(): ChatView {
@@ -33,7 +40,12 @@ export function initialChatView(): ChatView {
     queue: { steering: [], followUp: [] },
     banner: null,
     retryAttempt: null,
-    stats: null
+    stats: null,
+    model: null,
+    modelList: [],
+    thinkingLevels: [],
+    dialogs: [],
+    extensionStatus: null
   }
 }
 
@@ -46,7 +58,8 @@ export function reduceBatch(view: ChatView, batch: PiBatch): ChatView {
       ...message,
       blocks: message.blocks.map((block) => ({ ...block }))
     })),
-    toolCalls: { ...view.toolCalls }
+    toolCalls: { ...view.toolCalls },
+    dialogs: [...view.dialogs]
   }
   for (const event of batch.events) applyEvent(next, event)
   return next
@@ -151,6 +164,24 @@ function applyEvent(view: ChatView, event: DomainEvent): void {
         text: `pi 已退出：${event.stderrTail || event.code || event.signal}`
       }
       return
+    case 'extension_ui': {
+      const request = event.request
+      if (request.method === 'setStatus') {
+        view.extensionStatus = request.statusText ?? null
+        return
+      }
+      if (
+        request.method === 'select' ||
+        request.method === 'confirm' ||
+        request.method === 'input' ||
+        request.method === 'editor'
+      ) {
+        if (!view.dialogs.some((dialog) => dialog.id === request.id)) {
+          view.dialogs.push(request)
+        }
+      }
+      return
+    }
     case 'extension_error':
       view.banner = { kind: 'error', text: event.message }
       return
