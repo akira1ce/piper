@@ -112,6 +112,8 @@ export class PiGateway {
     })
     client.onProtocolError((message) => this.batcher.push({ type: 'protocol_error', message }))
     transport.onExit((info) => {
+      // 主动 stop/切换会话时，旧进程的 exit 不应上报为异常
+      if (this.transport !== transport) return
       this.client = null
       this.transport = null
       this.batcher.push({
@@ -126,10 +128,15 @@ export class PiGateway {
     this.client = client
     this.transport = transport
     const state = await client.request({ type: 'get_state' })
-    const models = (await client.request({ type: 'get_available_models' })) as {
-      models: ModelInfo[]
+    this.models = []
+    try {
+      const models = (await client.request({ type: 'get_available_models' })) as {
+        models: ModelInfo[]
+      }
+      this.models = models.models
+    } catch {
+      // 未配置模型时不影响会话本身
     }
-    this.models = models.models
     return { ...resolved, state }
   }
 

@@ -89,10 +89,5 @@ export const projectActions = {
       const data = state.data as { sessionFile?: string }
       useProjectsStore.setState({ activeSessionPath: data.sessionFile ?? session.path })
     }
-    const messages = await window.api.pi.invoke({ type: 'messages' })
-    if (messages.ok) {
-      // 消息回放交给 M3 的 renderer reducer；M2 只验证能拿到消息
-      console.info('replayed messages', (messages.data as { messages: unknown[] }).messages.length)
-    }
   }
 }
