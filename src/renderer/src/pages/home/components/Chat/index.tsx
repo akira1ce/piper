@@ -21,6 +21,7 @@ export function Chat(): React.JSX.Element {
   const retryAttempt = useChatStore((state) => state.retryAttempt)
   const sessionPath = useChatStore((state) => state.sessionPath)
   const extensionStatus = useChatStore((state) => state.extensionStatus)
+  const sessionId = useChatStore((state) => state.sessionId)
   const activeSessionPath = useProjectsStore((state) => state.activeSessionPath)
   const sessions = useProjectsStore((state) => state.sessions)
   const title = useMemo(() => {
@@ -80,6 +81,14 @@ export function Chat(): React.JSX.Element {
                   ? '连接异常'
                   : '空闲'}
           </span>
+          {sessionId && (
+            <span
+              className="text-accent-neutral/70 shrink-0 font-mono text-[10px]"
+              title={`session id: ${sessionId}`}
+            >
+              #{sessionId.slice(0, 8)}
+            </span>
+          )}
           {extensionStatus && (
             <span className="text-accent-neutral shrink-0 truncate">{extensionStatus}</span>
           )}

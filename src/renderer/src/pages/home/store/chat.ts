@@ -15,6 +15,7 @@ export const chatActions = {
   setSession: (sessionPath: string | null): void => useChatStore.setState({ sessionPath }),
   setContext: (cwd: string, sessionPath: string | null): void =>
     useChatStore.setState({ cwd, sessionPath }),
+  setSessionId: (sessionId: string | null): void => useChatStore.setState({ sessionId }),
   reconnect: async (): Promise<void> => {
     const { cwd, sessionPath } = useChatStore.getState()
     if (!cwd) return
@@ -30,8 +31,11 @@ export const chatActions = {
     }
     const state = await window.api.pi.invoke({ type: 'state' })
     if (state.ok) {
-      const data = state.data as { sessionFile?: string }
-      useChatStore.setState({ sessionPath: data.sessionFile ?? sessionPath })
+      const data = state.data as { sessionFile?: string; sessionId?: string }
+      useChatStore.setState({
+        sessionPath: data.sessionFile ?? sessionPath,
+        sessionId: data.sessionId ?? null
+      })
     }
     const messages = await window.api.pi.invoke({ type: 'messages' })
     if (messages.ok) {
@@ -61,7 +65,10 @@ export const chatActions = {
         : view.thinkingLevels,
       thinkingLevel: state.ok
         ? ((state.data as { thinkingLevel?: ThinkingLevel }).thinkingLevel ?? view.thinkingLevel)
-        : view.thinkingLevel
+        : view.thinkingLevel,
+      sessionId: state.ok
+        ? ((state.data as { sessionId?: string }).sessionId ?? view.sessionId)
+        : view.sessionId
     }))
   },
   setModel: async (provider: string, modelId: string): Promise<void> => {
