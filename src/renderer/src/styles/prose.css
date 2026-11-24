@@ -58,6 +58,8 @@
 [data-streamdown='code-block-header'] {
   padding: 0.25rem 0.5rem;
   min-height: 0;
+  border: 0;
+  background: transparent;
 }
 
 [data-streamdown='code-block-body'] {
@@ -69,7 +71,11 @@
 
 /* Streamdown 代码块右上角操作区：小图标、悬停才出现 */
 [data-streamdown='code-block-actions'] {
-  gap: 0.125rem;
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  border: 0;
+  background: transparent;
   opacity: 0;
   transition: opacity 120ms ease;
 }
