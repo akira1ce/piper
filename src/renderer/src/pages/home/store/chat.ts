@@ -13,6 +13,32 @@ export const chatActions = {
   },
   reset: (): void => useChatStore.setState(initialChatView(), true),
   setSession: (sessionPath: string | null): void => useChatStore.setState({ sessionPath }),
+  setContext: (cwd: string, sessionPath: string | null): void =>
+    useChatStore.setState({ cwd, sessionPath }),
+  reconnect: async (): Promise<void> => {
+    const { cwd, sessionPath } = useChatStore.getState()
+    if (!cwd) return
+    useChatStore.setState({ status: 'reconnecting', banner: null })
+    const started = await window.api.pi.invoke({
+      type: 'start',
+      cwd,
+      ...(sessionPath ? { sessionPath } : {})
+    })
+    if (!started.ok) {
+      useChatStore.setState({ status: 'error', banner: { kind: 'error', text: started.error } })
+      return
+    }
+    const state = await window.api.pi.invoke({ type: 'state' })
+    if (state.ok) {
+      const data = state.data as { sessionFile?: string }
+      useChatStore.setState({ sessionPath: data.sessionFile ?? sessionPath })
+    }
+    const messages = await window.api.pi.invoke({ type: 'messages' })
+    if (messages.ok) {
+      chatActions.loadMessages((messages.data as { messages: unknown[] }).messages)
+    }
+    useChatStore.setState({ status: 'idle', banner: null })
+  },
   abortRetry: async (): Promise<void> => {
     await window.api.pi.invoke({ type: 'abortRetry' })
   },
