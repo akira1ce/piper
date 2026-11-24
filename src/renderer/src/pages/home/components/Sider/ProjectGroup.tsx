@@ -2,7 +2,7 @@ import { ChevronRight, Plus } from 'lucide-react'
 import type { JSX } from 'react'
 import type { Project, SessionSummary } from '@shared/piProtocol'
 import { cn } from '@renderer/lib/utils'
-import { SessionItem } from './SessionItem'
+import { SessionRow } from './SessionRow'
 
 interface ProjectGroupProps {
   project: Project
@@ -47,8 +47,9 @@ export function ProjectGroup(props: ProjectGroupProps): JSX.Element {
             <p className="text-accent-neutral px-2 py-1 text-[11px]">暂无会话</p>
           )}
           {props.sessions.map((session) => (
-            <SessionItem
+            <SessionRow
               key={session.path}
+              projectId={props.project.id}
               session={session}
               active={session.path === props.activeSessionPath}
               onOpen={() => props.onOpenSession(session)}

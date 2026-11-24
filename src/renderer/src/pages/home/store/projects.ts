@@ -82,6 +82,16 @@ export const projectActions = {
     await projectActions.load()
   },
 
+  activeProject: (): Project | undefined => {
+    const { projects, sessions, activeSessionPath } = useProjectsStore.getState()
+    for (const project of projects) {
+      if ((sessions[project.id] ?? []).some((session) => session.path === activeSessionPath)) {
+        return project
+      }
+    }
+    return projects.find((project) => project.available)
+  },
+
   toggle: (projectId: string): void =>
     useProjectsStore.setState((state) => ({
       expanded: { ...state.expanded, [projectId]: !state.expanded[projectId] }
@@ -95,7 +105,7 @@ export const projectActions = {
     if (state.ok) {
       const data = state.data as { sessionFile?: string }
       chatActions.reset()
-      chatActions.setSession(data.sessionFile ?? null)
+      chatActions.setContext(project.path, data.sessionFile ?? null)
       useProjectsStore.setState({ activeSessionPath: data.sessionFile ?? null })
       if (data.sessionFile) {
         await window.api.pi.invoke({
@@ -116,12 +126,13 @@ export const projectActions = {
     })
     if (!result.ok) return
     chatActions.reset()
-    chatActions.setSession(session.path)
+    chatActions.setContext(project.path, session.path)
     useProjectsStore.setState({ activeSessionPath: session.path })
     const state = await window.api.pi.invoke({ type: 'state' })
     if (state.ok) {
       const data = state.data as { sessionFile?: string }
       useProjectsStore.setState({ activeSessionPath: data.sessionFile ?? session.path })
+      chatActions.setContext(project.path, data.sessionFile ?? session.path)
     }
     const messages = await window.api.pi.invoke({ type: 'messages' })
     if (messages.ok) {

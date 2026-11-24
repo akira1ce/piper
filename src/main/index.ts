@@ -81,9 +81,11 @@ app.whenReady().then(() => {
   })
 
   const userData = app.getPath('userData')
+  const sessionsDir = resolveSessionsDir(process.env)
   registerPiIpc({
     gateway,
-    sessions: new SessionIndex({ sessionsDir: resolveSessionsDir(process.env) }),
+    sessions: new SessionIndex({ sessionsDir }),
+    sessionsDir,
     projects: new ProjectRegistry({ filePath: join(userData, 'projects.json') }),
     appState: new AppStateStore({ filePath: join(userData, 'state.json') }),
     getWindow: () => BrowserWindow.getAllWindows()[0] ?? null

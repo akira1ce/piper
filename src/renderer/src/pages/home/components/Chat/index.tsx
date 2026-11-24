@@ -1,6 +1,7 @@
 import { PanelLeft, PanelRight } from 'lucide-react'
 import { useEffect, useMemo } from 'react'
 import { Button } from '@renderer/components/ui/button'
+import { cn } from '@renderer/lib/utils'
 import { chatActions, useChatStore } from '../../store/chat'
 import { Composer } from './Composer'
 import { ExtensionDialog } from './ExtensionDialog'
@@ -40,7 +41,12 @@ export function Chat(): React.JSX.Element {
 
   return (
     <div className="flex h-full min-w-0 flex-col">
-      <header className="window-drag flex h-12 shrink-0 items-center gap-1 px-2">
+      <header
+        className={cn(
+          'window-drag flex h-12 shrink-0 items-center gap-1 pr-2 transition-[padding] duration-150',
+          sidebarCollapsed ? 'pl-[var(--titlebar-inset)]' : 'pl-2'
+        )}
+      >
         <Button
           variant="ghost"
           size="icon-sm"
@@ -93,7 +99,25 @@ export function Chat(): React.JSX.Element {
           <StatsBar />
         </div>
       </div>
-      {banner && <div className="text-accent-rose px-3 py-1 text-[11px]">{banner.text}</div>}
+      {banner && (
+        <div
+          className={cn(
+            'flex items-center justify-between gap-2 px-3 py-1 text-[11px]',
+            banner.kind === 'error' ? 'text-accent-rose' : 'text-accent-sky'
+          )}
+        >
+          <span className="min-w-0 truncate">{banner.text}</span>
+          {status === 'error' && sessionPath && (
+            <button
+              type="button"
+              onClick={() => void chatActions.reconnect()}
+              className="text-accent-sky hover:text-fore shrink-0 underline underline-offset-2"
+            >
+              重连
+            </button>
+          )}
+        </div>
+      )}
 
       <MessageList />
 
