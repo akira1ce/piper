@@ -1,0 +1,9 @@
+/* Chat 模块的 Streamdown 定制。只处理库自带的视觉不一致，不改交互与尺寸。 */
+
+/* 代码块右上角按钮组默认带 rounded-md + border + bg + backdrop，和表格的裸图标不一致 */
+.chat-markdown [data-streamdown='code-block-actions'] {
+  padding: 0;
+  border: 0;
+  background: transparent;
+  backdrop-filter: none;
+}

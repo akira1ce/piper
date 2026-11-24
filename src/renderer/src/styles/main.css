@@ -4,6 +4,7 @@
 @import '../theme/tokens.css';
 @import './shadcn.css';
 @import './prose.css';
+@import './modules/chat.css';
 
 @plugin '@tailwindcss/typography';
 
