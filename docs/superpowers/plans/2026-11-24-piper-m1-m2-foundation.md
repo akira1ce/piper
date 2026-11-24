@@ -582,7 +582,7 @@ export interface PiProcessHandlers {
 
 export interface PiExitInfo {
   code: number | null
-  signal: NodeJS.Signals | null
+  signal: string | null
 }
 
 const STDERR_LINES = 20
@@ -992,6 +992,7 @@ export interface PiTransport {
   writeLine(line: string): Promise<void>
   onLine(listener: (line: string) => void): () => void
   onExit(listener: (info: PiExitInfo) => void): () => void
+  stop?(): Promise<void>
   stderrTail?(): string
 }
 
@@ -1629,6 +1630,7 @@ export interface PiGatewayDeps {
 
 export class PiGateway {
   private client: PiClient | null = null
+  private transport: PiTransport | null = null
   private batcher: EventBatcher
   private models: ModelInfo[] = []
   private sessionFile: string | null = null
@@ -1729,6 +1731,7 @@ export class PiGateway {
     client.onProtocolError((message) => this.batcher.push({ type: 'protocol_error', message }))
     transport.onExit((info) => {
       this.client = null
+      this.transport = null
       this.batcher.push({
         type: 'process_exit',
         code: info.code,
@@ -1739,6 +1742,7 @@ export class PiGateway {
     })
 
     this.client = client
+    this.transport = transport
     this.cwd = cwd
     const state = (await client.request({ type: 'get_state' })) as { sessionFile?: string }
     this.sessionFile = state.sessionFile ?? sessionPath ?? null
@@ -1751,15 +1755,19 @@ export class PiGateway {
 
   private async stop(): Promise<void> {
     const client = this.client
+    const transport = this.transport
     this.client = null
+    this.transport = null
     this.sessionFile = null
-    if (!client) return
-    try {
-      await client.request({ type: 'abort' }, 3000)
-    } catch {
-      // 进程可能已经退出
+    if (client) {
+      try {
+        await client.request({ type: 'abort' }, 3000)
+      } catch {
+        // 进程可能已经退出
+      }
+      client.dispose()
     }
-    client.dispose()
+    await transport?.stop?.()
   }
 
   private requireClient(): PiClient {
@@ -2734,6 +2742,10 @@ const gateway = new PiGateway({
   }
 })
 
+app.on('before-quit', () => {
+  void gateway.handle({ type: 'stop' })
+})
+
 const userData = app.getPath('userData')
 const sessions = new SessionIndex({ sessionsDir: resolveSessionsDir(process.env) })
 const projects = new ProjectRegistry({ filePath: join(userData, 'projects.json') })
@@ -2868,11 +2880,14 @@ export const projectActions = {
       return
     }
     const projects = result.data as Project[]
-    useProjectsStore.setState({
+    useProjectsStore.setState((state) => ({
       projects,
       loading: false,
-      expanded: Object.fromEntries(projects.map((p) => [p.id, true]))
-    })
+      expanded: {
+        ...Object.fromEntries(projects.map((p) => [p.id, true])),
+        ...state.expanded
+      }
+    }))
     await Promise.all(projects.map((p) => projectActions.loadSessions(p.id)))
   },
   loadSessions: async (projectId: string): Promise<void> => {
@@ -2900,9 +2915,9 @@ export const projectActions = {
       expanded: { ...state.expanded, [projectId]: !state.expanded[projectId] }
     })),
   newSession: async (project: Project): Promise<void> => {
+    // 不带 --session 启动 pi 本身就会创建新会话，无需再发 new_session
     const result = await window.api.pi.invoke({ type: 'start', cwd: project.path })
     if (!result.ok) return
-    await window.api.pi.invoke({ type: 'newSession' })
     await projectActions.loadSessions(project.id)
   },
   openSession: async (project: Project, session: SessionSummary): Promise<void> => {
