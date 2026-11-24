@@ -8,6 +8,7 @@ import { ExtensionDialog } from './ExtensionDialog'
 import { ModelPicker } from './ModelPicker'
 import { MessageList } from './MessageList'
 import { QueueChips } from './QueueChips'
+import { SessionActions } from './SessionActions'
 import { StatsBar } from './StatsBar'
 import { ThinkingPicker } from './ThinkingPicker'
 import { useProjectsStore } from '../../store/projects'
@@ -89,6 +90,7 @@ export function Chat(): React.JSX.Element {
           )}
         </div>
         <div className="flex shrink-0 items-center gap-2">
+          <SessionActions currentName={title} />
           <ModelPicker />
           <ThinkingPicker />
           <StatsBar />
