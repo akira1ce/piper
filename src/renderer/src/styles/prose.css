@@ -37,11 +37,7 @@
   border-radius: 8px;
 }
 
-/* Streamdown 代码块与表格在暗色下的细节 */
-.prose pre {
-  background: var(--bg-card);
-  border-color: var(--bg-card-hover);
-}
+/* Streamdown 自带代码块容器样式，这里不要再包一层 */
 
 .prose table {
   font-size: 0.8125rem;
@@ -49,4 +45,24 @@
 
 .prose a {
   text-underline-offset: 2px;
+}
+
+/* Streamdown 代码块：去掉双重边框与多余留白 */
+[data-streamdown='code-block'] {
+  gap: 0;
+  padding: 0;
+  background: var(--bg-card);
+  border-color: var(--bg-card-hover);
+}
+
+[data-streamdown='code-block-header'] {
+  padding: 0.25rem 0.5rem;
+  min-height: 0;
+}
+
+[data-streamdown='code-block-body'] {
+  padding: 0.5rem 0.75rem;
+  background: transparent;
+  border: 0;
+  border-radius: 0;
 }
