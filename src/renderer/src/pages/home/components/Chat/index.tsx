@@ -41,7 +41,12 @@ export function Chat(): React.JSX.Element {
 
   return (
     <div className="flex h-full min-w-0 flex-col">
-      <header className="window-drag flex h-12 shrink-0 items-center gap-1 px-2">
+      <header
+        className={cn(
+          'window-drag flex h-12 shrink-0 items-center gap-1 pr-2 transition-[padding] duration-150',
+          sidebarCollapsed ? 'pl-[var(--titlebar-inset)]' : 'pl-2'
+        )}
+      >
         <Button
           variant="ghost"
           size="icon-sm"
