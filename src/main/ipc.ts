@@ -4,6 +4,7 @@ import type { PiCommand, PiResult } from '@shared/piProtocol'
 import type { PiGateway } from './pi/piGateway'
 import type { SessionIndex } from './pi/sessionIndex'
 import type { ProjectRegistry } from './projects'
+import type { AppStateStore } from './appState'
 
 export const INVOKE_CHANNEL = 'piper:invoke'
 export const EVENT_CHANNEL = 'piper:event'
@@ -30,6 +31,8 @@ const COMMANDS = new Set<PiCommand['type']>([
   'removeProject',
   'renameProject',
   'pickDirectory',
+  'lastSession',
+  'rememberSession',
   'extensionRespond'
 ])
 
@@ -43,6 +46,7 @@ export interface IpcDeps {
   gateway: PiGateway
   sessions: SessionIndex
   projects: ProjectRegistry
+  appState: AppStateStore
   getWindow: () => BrowserWindow | null
 }
 
@@ -92,6 +96,11 @@ async function route(deps: IpcDeps, command: PiCommand): Promise<PiResult> {
     case 'prompt':
       if (!command.text.trim()) return { ok: false, error: '消息不能为空' }
       return deps.gateway.handle(command)
+    case 'lastSession':
+      return { ok: true, data: await deps.appState.get() }
+    case 'rememberSession':
+      await deps.appState.remember(command.projectId, command.sessionPath)
+      return { ok: true, data: null }
     case 'pickDirectory': {
       const picked = await dialog.showOpenDialog({ properties: ['openDirectory'] })
       return { ok: true, data: picked.canceled ? null : picked.filePaths[0] }

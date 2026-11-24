@@ -134,6 +134,8 @@ export type PiCommand =
   | { type: 'removeProject'; projectId: string }
   | { type: 'renameProject'; projectId: string; name: string }
   | { type: 'pickDirectory' }
+  | { type: 'lastSession' }
+  | { type: 'rememberSession'; projectId: string; sessionPath: string }
   | {
       type: 'extensionRespond'
       id: string

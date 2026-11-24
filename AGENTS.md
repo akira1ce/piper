@@ -8,6 +8,7 @@ Piper 是 pi 的 GUI 客户端（Electron + React + Tailwind + Radix + zustand�
 - 渲染进程不碰 Node：没有 fs / child_process / 原始 ipcRenderer。
 - 需要主进程能力时，走 preload 暴露的白名单 API。
 - 跨进程的协议类型（`PiCommand` / `DomainEvent` / `Project` 等）只放 `src/shared`，main、preload、renderer 都从这里引用。
+- 用户数据只落 `app.getPath('userData')`（`projects.json`、`state.json`）；验证/测试不得删除真实用户数据，需要时用临时目录或环境变量隔离。
 
 ## 目录与页面
 

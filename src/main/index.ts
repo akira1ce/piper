@@ -9,6 +9,7 @@ import { PiProcess } from './pi/piProcess'
 import { isVersionSupported, resolvePiPath } from './pi/resolvePi'
 import { resolveSessionsDir, SessionIndex } from './pi/sessionIndex'
 import { ProjectRegistry } from './projects'
+import { AppStateStore } from './appState'
 import { registerPiIpc, EVENT_CHANNEL } from './ipc'
 
 function createWindow(): void {
@@ -79,12 +80,12 @@ app.whenReady().then(() => {
     void gateway.handle({ type: 'stop' })
   })
 
+  const userData = app.getPath('userData')
   registerPiIpc({
     gateway,
     sessions: new SessionIndex({ sessionsDir: resolveSessionsDir(process.env) }),
-    projects: new ProjectRegistry({
-      filePath: join(app.getPath('userData'), 'projects.json')
-    }),
+    projects: new ProjectRegistry({ filePath: join(userData, 'projects.json') }),
+    appState: new AppStateStore({ filePath: join(userData, 'state.json') }),
     getWindow: () => BrowserWindow.getAllWindows()[0] ?? null
   })
 
