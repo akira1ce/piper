@@ -112,7 +112,7 @@ export function ViewDiff(): React.JSX.Element {
               )}
             >
               <AccordionTrigger
-                className="items-center gap-2 py-2 text-[11px] hover:no-underline"
+                className="items-center gap-2 py-2 text-[11px] hover:no-underline [&>svg]:translate-y-0"
                 onClick={() => reviewActions.select(file.path)}
               >
                 <span className="min-w-0 flex-1 truncate font-mono text-[11px]">{file.path}</span>
