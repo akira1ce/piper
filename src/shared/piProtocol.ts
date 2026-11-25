@@ -57,10 +57,25 @@ export interface MessageBlock {
   toolCallId?: string
 }
 
+export interface FileChange {
+  path: string
+  status: 'modified' | 'created'
+  additions: number
+  deletions: number
+  patch: string
+}
+
+export interface TurnChanges {
+  files: FileChange[]
+  additions: number
+  deletions: number
+}
+
 export interface MessageView {
   id: string
   role: 'user' | 'assistant'
   blocks: MessageBlock[]
+  changes?: TurnChanges
 }
 
 export interface ExtensionUiRequest {
