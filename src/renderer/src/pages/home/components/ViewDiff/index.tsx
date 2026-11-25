@@ -2,6 +2,7 @@ import { FileDiff, FolderTree, List } from 'lucide-react'
 import { useEffect, useMemo, useState } from 'react'
 import type { FileChange } from '@shared/piProtocol'
 import { cn } from '@renderer/lib/utils'
+import { FileTree } from '@renderer/components/FileTree'
 import { buildTree } from '../../controller/fileTree'
 import { useChatStore } from '../../store/chat'
 import { reviewActions, useReviewStore } from '../../store/review'
@@ -12,7 +13,6 @@ import {
   AccordionTrigger
 } from '@renderer/components/ui/accordion'
 import { DiffLines } from './DiffLines'
-import { FileTree } from './FileTree'
 
 export function ViewDiff(): React.JSX.Element {
   const changes = useReviewStore((state) => state.changes)
@@ -131,9 +131,18 @@ export function ViewDiff(): React.JSX.Element {
             {tree.length > 0 ? (
               <FileTree
                 nodes={tree}
-                changed={changedMap}
-                selected={selectedPath}
+                selectedPath={selectedPath}
                 onSelect={reviewActions.select}
+                renderSuffix={(node) => {
+                  const change = changedMap.get(node.path)
+                  if (!change) return null
+                  return (
+                    <span className="shrink-0 text-[10px]">
+                      <span className="text-accent-emerald">+{change.additions}</span>{' '}
+                      <span className="text-accent-rose">-{change.deletions}</span>
+                    </span>
+                  )
+                }}
               />
             ) : (
               <div className="p-1">
