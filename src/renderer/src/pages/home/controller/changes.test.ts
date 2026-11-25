@@ -9,7 +9,14 @@ import {
   summarizeChanges
 } from './changes'
 
-const patch = ['--- a/src/a.ts', '+++ b/src/a.ts', '@@ -1,2 +1,2 @@', ' const a = 1', '-const b = 2', '+const b = 3'].join('\n')
+const patch = [
+  '--- a/src/a.ts',
+  '+++ b/src/a.ts',
+  '@@ -1,2 +1,2 @@',
+  ' const a = 1',
+  '-const b = 2',
+  '+const b = 3'
+].join('\n')
 
 describe('changes', () => {
   it('counts additions and deletions without file headers', () => {
@@ -51,7 +58,12 @@ describe('changes', () => {
       result: { details: { patch } },
       cwd: '/repo'
     })
-    expect(change).toMatchObject({ path: 'src/a.ts', status: 'modified', additions: 1, deletions: 1 })
+    expect(change).toMatchObject({
+      path: 'src/a.ts',
+      status: 'modified',
+      additions: 1,
+      deletions: 1
+    })
   })
 
   it('merges repeated edits of the same path', () => {

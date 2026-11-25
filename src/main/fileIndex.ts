@@ -34,18 +34,23 @@ const DEFAULT_LIMIT = 5000
 
 function gitFiles(cwd: string): Promise<string[] | null> {
   return new Promise((resolve) => {
-    execFile('git', ['ls-files', '-co', '--exclude-standard', '-z'], { cwd, maxBuffer: 32 * 1024 * 1024 }, (error, stdout) => {
-      if (error) {
-        resolve(null)
-        return
+    execFile(
+      'git',
+      ['ls-files', '-co', '--exclude-standard', '-z'],
+      { cwd, maxBuffer: 32 * 1024 * 1024 },
+      (error, stdout) => {
+        if (error) {
+          resolve(null)
+          return
+        }
+        resolve(
+          stdout
+            .split('\0')
+            .filter(Boolean)
+            .map((path) => path.replace(/\\/g, '/'))
+        )
       }
-      resolve(
-        stdout
-          .split('\0')
-          .filter(Boolean)
-          .map((path) => path.replace(/\\/g, '/'))
-      )
-    })
+    )
   })
 }
 
@@ -83,7 +88,12 @@ export async function listProjectFiles(
     const tracked = await (deps.gitFiles ?? gitFiles)(cwd)
     if (tracked && tracked.length > 0) {
       const files = tracked.sort()
-      return { root: cwd, files: files.slice(0, limit), truncated: files.length > limit, source: 'git' }
+      return {
+        root: cwd,
+        files: files.slice(0, limit),
+        truncated: files.length > limit,
+        source: 'git'
+      }
     }
     const walked = await (deps.walk ?? walkFiles)(cwd, limit)
     return { root: cwd, files: walked, truncated: walked.length >= limit, source: 'walk' }

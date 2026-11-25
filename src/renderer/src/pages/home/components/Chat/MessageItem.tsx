@@ -1,5 +1,6 @@
 import type { JSX } from 'react'
 import type { MessageView, ToolCallView } from '@shared/piProtocol'
+import { ChangeSummaryCard } from './ChangeSummaryCard'
 import { Markdown } from './Markdown'
 import { ThinkingBlock } from './ThinkingBlock'
 import { ToolCallCard } from './ToolCallCard'
@@ -32,6 +33,7 @@ export function MessageItem({ message, toolCalls }: MessageItemProps): JSX.Eleme
         const tool = block.toolCallId ? toolCalls[block.toolCallId] : undefined
         return tool ? <ToolCallCard key={index} tool={tool} /> : null
       })}
+      {message.changes && <ChangeSummaryCard changes={message.changes} />}
     </div>
   )
 }

@@ -1,15 +1,120 @@
-import { FileDiff } from 'lucide-react'
+import { FileDiff, X } from 'lucide-react'
+import { useEffect, useMemo, useState } from 'react'
+import type { FileChange } from '@shared/piProtocol'
+import { cn } from '@renderer/lib/utils'
+import { buildTree } from '../../controller/fileTree'
+import { useChatStore } from '../../store/chat'
+import { reviewActions, useReviewStore } from '../../store/review'
+import { DiffLines } from './DiffLines'
+import { FileTree } from './FileTree'
 
 export function ViewDiff(): React.JSX.Element {
+  const changes = useReviewStore((state) => state.changes)
+  const selectedPath = useReviewStore((state) => state.selectedPath)
+  const cwd = useChatStore((state) => state.cwd)
+  const [files, setFiles] = useState<string[]>([])
+
+  useEffect(() => {
+    if (!changes || !cwd) {
+      setFiles([])
+      return
+    }
+    let alive = true
+    void window.api.pi.invoke({ type: 'files', cwd }).then((result) => {
+      if (!alive || !result.ok) return
+      const data = result.data as { files: string[] }
+      setFiles(data.files)
+    })
+    return () => {
+      alive = false
+    }
+  }, [changes, cwd])
+
+  const changedMap = useMemo(() => {
+    const map = new Map<string, FileChange>()
+    for (const file of changes?.files ?? []) map.set(file.path, file)
+    return map
+  }, [changes])
+
+  const tree = useMemo(() => buildTree(files), [files])
+  const selected = changes?.files.find((file) => file.path === selectedPath)
+
+  if (!changes) {
+    return (
+      <div className="border-accent-neutral/20 flex h-full min-w-0 flex-col border-l">
+        <header className="window-drag flex h-12 shrink-0 items-center gap-2 px-3">
+          <FileDiff className="text-accent-neutral size-4" />
+          <span className="text-sm">变更</span>
+        </header>
+        <div className="flex flex-1 items-center justify-center">
+          <p className="text-accent-neutral text-xs">还没有文件变更</p>
+        </div>
+      </div>
+    )
+  }
+
+  const useTree = changes.files.length > 3 && tree.length > 0
+
   return (
     <div className="border-accent-neutral/20 flex h-full min-w-0 flex-col border-l">
       <header className="window-drag flex h-12 shrink-0 items-center gap-2 px-3">
         <FileDiff className="text-accent-neutral size-4" />
         <span className="text-sm">变更</span>
+        <span className="text-accent-neutral text-[11px]">{changes.files.length} 个文件</span>
+        <div className="flex-1" />
+        <button
+          type="button"
+          aria-label="关闭审阅"
+          onClick={reviewActions.close}
+          className="text-accent-neutral hover:text-fore window-no-drag"
+        >
+          <X className="size-4" />
+        </button>
       </header>
 
-      <div className="flex flex-1 items-center justify-center">
-        <p className="text-accent-neutral text-xs">还没有文件变更</p>
+      <div className="flex min-h-0 flex-1">
+        {changes.files.length > 1 && (
+          <div className="border-accent-neutral/10 w-56 shrink-0 overflow-y-auto border-r">
+            {useTree ? (
+              <FileTree
+                nodes={tree}
+                changed={changedMap}
+                selected={selectedPath}
+                onSelect={reviewActions.select}
+              />
+            ) : (
+              <div className="p-1">
+                {changes.files.map((file) => (
+                  <button
+                    key={file.path}
+                    type="button"
+                    onClick={() => reviewActions.select(file.path)}
+                    className={cn(
+                      'hover:bg-card-hover flex w-full items-center gap-2 rounded px-2 py-1 text-left text-[11px]',
+                      selectedPath === file.path && 'bg-card-hover text-fore'
+                    )}
+                  >
+                    <span className="min-w-0 flex-1 truncate font-mono">{file.path}</span>
+                    <span className="text-accent-emerald shrink-0">+{file.additions}</span>
+                    <span className="text-accent-rose shrink-0">-{file.deletions}</span>
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+
+        <div className="min-w-0 flex-1 overflow-auto">
+          {selected ? (
+            <DiffLines file={selected} />
+          ) : (
+            <div className="flex h-full items-center justify-center">
+              <p className="text-accent-neutral text-xs">
+                {selectedPath ? '该文件本轮没有变更' : '选择一个文件查看 diff'}
+              </p>
+            </div>
+          )}
+        </div>
       </div>
     </div>
   )

@@ -101,7 +101,12 @@ describe('messagesToView', () => {
         {
           role: 'assistant',
           content: [
-            { type: 'toolCall', id: 'c1', name: 'write', arguments: { path: '/repo/new.md', content: 'a\nb' } }
+            {
+              type: 'toolCall',
+              id: 'c1',
+              name: 'write',
+              arguments: { path: '/repo/new.md', content: 'a\nb' }
+            }
           ],
           timestamp: 1
         },

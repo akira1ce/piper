@@ -41,7 +41,14 @@ describe('reduceBatch', () => {
       view,
       batch([
         { type: 'tool_start', toolCallId: 'c1', toolName: 'bash', args: { command: 'ls' } },
-        { type: 'tool_end', toolCallId: 'c1', toolName: 'bash', result: {}, isError: false, durationMs: 12 }
+        {
+          type: 'tool_end',
+          toolCallId: 'c1',
+          toolName: 'bash',
+          result: {},
+          isError: false,
+          durationMs: 12
+        }
       ])
     )
     expect(view.toolCalls.c1).toMatchObject({ state: 'done', durationMs: 12 })

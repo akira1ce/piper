@@ -1,6 +1,7 @@
 import { create } from 'zustand'
 import type { Project, SessionSummary } from '@shared/piProtocol'
 import { chatActions } from './chat'
+import { reviewActions } from './review'
 
 export interface ProjectsState {
   projects: Project[]
@@ -105,6 +106,7 @@ export const projectActions = {
     if (state.ok) {
       const data = state.data as { sessionFile?: string }
       chatActions.reset()
+      reviewActions.close()
       chatActions.setContext(project.path, data.sessionFile ?? null)
       useProjectsStore.setState({ activeSessionPath: data.sessionFile ?? null })
       if (data.sessionFile) {
@@ -126,6 +128,7 @@ export const projectActions = {
     })
     if (!result.ok) return
     chatActions.reset()
+    reviewActions.close()
     chatActions.setContext(project.path, session.path)
     useProjectsStore.setState({ activeSessionPath: session.path })
     const state = await window.api.pi.invoke({ type: 'state' })
