@@ -141,14 +141,14 @@ export function ViewDiff(): React.JSX.Element {
               )}
             >
               <AccordionTrigger
-                className="items-center gap-2 py-2 text-[11px] hover:no-underline [&>svg]:translate-y-0"
+                className="min-w-0 items-center gap-2 py-2 text-[11px] hover:no-underline [&>svg]:translate-y-0"
                 onClick={() => reviewActions.select(file.path)}
               >
                 <FilePathLabel path={file.path} className="flex-1 text-[11px]" />
                 <span className="text-accent-emerald shrink-0 text-[11px]">+{file.additions}</span>
                 <span className="text-accent-rose shrink-0 text-[11px]">-{file.deletions}</span>
               </AccordionTrigger>
-              <AccordionContent className="p-0">
+              <AccordionContent className="p-0 min-w-0">
                 <DiffLines file={file} showHeader={false} />
               </AccordionContent>
             </AccordionItem>
