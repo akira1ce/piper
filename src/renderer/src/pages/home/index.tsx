@@ -21,6 +21,7 @@ export function Home(): React.JSX.Element {
     { preventDefault: true }
   )
   useHotkeys('mod+shift+d', () => uiActions.toggleDiff(), { preventDefault: true })
+  useHotkeys('mod+l', () => uiActions.toggleDiff(), { preventDefault: true })
 
   useEffect(() => {
     void projectActions.load()
@@ -36,7 +37,7 @@ export function Home(): React.JSX.Element {
           <Panel defaultSize="18%" minSize="12%" maxSize="30%" className="h-full min-w-0">
             <Sider />
           </Panel>
-          <Separator className="bg-accent-neutral/20 hover:bg-brand/60 w-px transition-colors" />
+          <Separator className="bg-accent-neutral/20 hover:bg-brand/60 w-[0.5px] transition-colors" />
         </>
       )}
 
@@ -46,7 +47,7 @@ export function Home(): React.JSX.Element {
 
       {diffVisible && (
         <>
-          <Separator className="bg-accent-neutral/20 hover:bg-brand/60 w-px transition-colors" />
+          <Separator className="bg-accent-neutral/20 hover:bg-brand/60 w-[0.5px] transition-colors" />
           <Panel defaultSize="30%" minSize="18%" maxSize="50%" className="h-full min-w-0">
             <ViewDiff />
           </Panel>

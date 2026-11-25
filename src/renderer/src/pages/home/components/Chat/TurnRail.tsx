@@ -101,6 +101,7 @@ export function TurnRail({ turns, visibleIndex, onJump }: TurnRailProps): JSX.El
                 type="button"
                 aria-label={`跳到第 ${index + 1} 轮`}
                 onMouseEnter={(event) => handleEnter(index, event.currentTarget)}
+                onMouseLeave={() => setHover(null)}
                 onClick={() => onJump(turn.index)}
                 className="flex w-8 items-center justify-center"
                 style={{ height: ROW_HEIGHT }}

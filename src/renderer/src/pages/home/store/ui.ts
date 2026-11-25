@@ -14,5 +14,6 @@ export const useUiStore = create<HomeUiState>(() => ({
 export const uiActions = {
   toggleSidebar: (): void =>
     useUiStore.setState((state) => ({ sidebarCollapsed: !state.sidebarCollapsed })),
-  toggleDiff: (): void => useUiStore.setState((state) => ({ diffVisible: !state.diffVisible }))
+  toggleDiff: (): void => useUiStore.setState((state) => ({ diffVisible: !state.diffVisible })),
+  showDiff: (): void => useUiStore.setState({ diffVisible: true })
 }

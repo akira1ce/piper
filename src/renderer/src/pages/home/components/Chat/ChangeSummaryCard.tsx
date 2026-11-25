@@ -3,6 +3,7 @@ import type { JSX } from 'react'
 import type { TurnChanges } from '@shared/piProtocol'
 import { Button } from '@renderer/components/ui/button'
 import { reviewActions } from '../../store/review'
+import { uiActions } from '../../store/ui'
 
 interface ChangeSummaryCardProps {
   changes: TurnChanges
@@ -21,7 +22,14 @@ export function ChangeSummaryCard({ changes }: ChangeSummaryCardProps): JSX.Elem
         <span className="text-accent-emerald text-xs">+{changes.additions}</span>
         <span className="text-accent-rose text-xs">-{changes.deletions}</span>
         <div className="flex-1" />
-        <Button variant="ghost" size="sm" onClick={() => reviewActions.open(changes)}>
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={() => {
+            reviewActions.open(changes)
+            uiActions.showDiff()
+          }}
+        >
           审阅
         </Button>
       </div>
@@ -30,7 +38,10 @@ export function ChangeSummaryCard({ changes }: ChangeSummaryCardProps): JSX.Elem
           <button
             key={file.path}
             type="button"
-            onClick={() => reviewActions.open(changes, file.path)}
+            onClick={() => {
+              reviewActions.open(changes, file.path)
+              uiActions.showDiff()
+            }}
             className="hover:bg-card-hover flex w-full items-center gap-2 px-3 py-1.5 text-left"
           >
             <span className="min-w-0 flex-1 truncate font-mono text-[11px]">{file.path}</span>
