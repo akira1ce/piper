@@ -1,9 +1,11 @@
 import { useVirtualizer } from '@tanstack/react-virtual'
 import { ArrowDown } from 'lucide-react'
-import { useEffect } from 'react'
+import { useEffect, useMemo } from 'react'
+import { buildTurns } from '../../controller/turns'
 import { useStickToBottom } from '../../controller/useStickToBottom'
 import { useChatStore } from '../../store/chat'
 import { MessageItem } from './MessageItem'
+import { TurnRail } from './TurnRail'
 
 /** 首屏/跳转时用于估算的高度，真实的会被 ResizeObserver 覆盖 */
 const ESTIMATED_HEIGHT = 120
@@ -31,6 +33,10 @@ export function MessageList(): React.JSX.Element {
     getItemKey: (index) => messages[index]?.id ?? index
   })
 
+  const turns = useMemo(() => buildTurns(messages), [messages])
+  const virtualItems = virtualizer.getVirtualItems()
+  const visibleIndex = virtualItems[0]?.index ?? messages.length - 1
+
   // 贴底由 useStickToBottom 的 scrollHeight 驱动；这里只处理流式输出时
   // 最后一条消息高度持续增长的情况。
   useEffect(() => {
@@ -39,7 +45,14 @@ export function MessageList(): React.JSX.Element {
 
   return (
     <div className="relative min-h-0 flex-1">
-      <div ref={containerRef} className="h-full overflow-y-auto px-4 py-4">
+      {messages.length > 0 && (
+        <TurnRail
+          turns={turns}
+          visibleIndex={visibleIndex}
+          onJump={(index) => virtualizer.scrollToIndex(index, { align: 'start' })}
+        />
+      )}
+      <div ref={containerRef} className="h-full overflow-y-auto px-10 py-4">
         {messages.length === 0 ? (
           <div className="flex h-full items-center justify-center">
             <p className="text-accent-neutral text-xs">发一条消息，或从左侧打开会话</p>
@@ -49,7 +62,7 @@ export function MessageList(): React.JSX.Element {
             className="relative mx-auto w-full max-w-3xl"
             style={{ height: virtualizer.getTotalSize() }}
           >
-            {virtualizer.getVirtualItems().map((item) => {
+            {virtualItems.map((item) => {
               const message = messages[item.index]
               if (!message) return null
               return (
