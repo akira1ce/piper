@@ -1,4 +1,5 @@
 import type { MessageBlock, MessageView, ToolCallView } from '@shared/piProtocol'
+import { aggregateTurnChanges } from './aggregateTurnChanges'
 import { fileChangeFromTool, mergeChanges, summarizeChanges } from './changes'
 
 interface RawBlock {
@@ -51,7 +52,7 @@ export function messagesToView(
     if (view) messages.push(view)
   }
 
-  return { messages, toolCalls }
+  return { messages: aggregateTurnChanges(messages), toolCalls }
 }
 
 export function messageToView(

@@ -9,6 +9,7 @@ import type {
   ThinkingLevel,
   ToolCallView
 } from '@shared/piProtocol'
+import { aggregateTurnChanges } from './aggregateTurnChanges'
 import { fileChangeFromTool, mergeChanges, summarizeChanges } from './changes'
 import { messageToView, toText } from './messagesToView'
 
@@ -70,6 +71,7 @@ export function reduceBatch(view: ChatView, batch: PiBatch): ChatView {
     dialogs: [...view.dialogs]
   }
   for (const event of batch.events) applyEvent(next, event)
+  next.messages = aggregateTurnChanges(next.messages)
   return next
 }
 
