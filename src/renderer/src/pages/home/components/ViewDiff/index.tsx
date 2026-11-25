@@ -1,9 +1,11 @@
-import { FileDiff, FolderTree, List } from 'lucide-react'
+import { ChevronsDownUp, ChevronsUpDown, FileDiff, FolderTree, List } from 'lucide-react'
 import { useEffect, useMemo, useState } from 'react'
 import type { FileChange } from '@shared/piProtocol'
 import { cn } from '@renderer/lib/utils'
 import { FileTree } from '@renderer/components/FileTree'
+import { Button } from '@renderer/components/ui/button'
 import { buildTree } from '../../controller/fileTree'
+import { expandablePaths, toggleAllPaths } from '../../controller/expandAll'
 import { useChatStore } from '../../store/chat'
 import { reviewActions, useReviewStore } from '../../store/review'
 import {
@@ -23,6 +25,18 @@ export function ViewDiff(): React.JSX.Element {
     owner: null,
     files: []
   })
+  const [openFiles, setOpenFiles] = useState<{ owner: unknown; paths: string[] }>({
+    owner: null,
+    paths: []
+  })
+  const filePaths = useMemo(() => changes?.files.map((file) => file.path) ?? [], [changes])
+  // 换一轮变更时回到默认「全部展开」；同一轮内保留用户手动收起的状态
+  if (changes && openFiles.owner !== changes) {
+    setOpenFiles({ owner: changes, paths: expandablePaths(filePaths) })
+  }
+  const openPaths =
+    changes && openFiles.owner === changes ? openFiles.paths : expandablePaths(filePaths)
+  const allOpen = filePaths.length > 0 && filePaths.every((path) => openPaths.includes(path))
 
   useEffect(() => {
     if (!changes || !cwd || mode !== 'tree') return
@@ -67,6 +81,20 @@ export function ViewDiff(): React.JSX.Element {
         <span className="text-sm">变更</span>
         <span className="text-accent-neutral text-[11px]">{changes.files.length} 个文件</span>
         <div className="flex-1" />
+        {mode === 'accordion' && filePaths.length > 0 && (
+          <Button
+            variant="ghost"
+            size="icon-sm"
+            className="window-no-drag text-accent-neutral"
+            aria-label={allOpen ? '收起全部变更' : '展开全部变更'}
+            title={allOpen ? '收起全部' : '展开全部'}
+            onClick={() =>
+              setOpenFiles({ owner: changes, paths: toggleAllPaths(filePaths, openPaths) })
+            }
+          >
+            {allOpen ? <ChevronsDownUp /> : <ChevronsUpDown />}
+          </Button>
+        )}
         <div className="window-no-drag border-accent-neutral/20 flex items-center gap-0.5 rounded border p-0.5">
           <button
             type="button"
@@ -97,9 +125,9 @@ export function ViewDiff(): React.JSX.Element {
 
       {mode === 'accordion' ? (
         <Accordion
-          key={changes.files.map((file) => file.path).join('|')}
           type="multiple"
-          defaultValue={changes.files.map((file) => file.path)}
+          value={openPaths}
+          onValueChange={(paths) => setOpenFiles({ owner: changes, paths })}
           className="min-h-0 flex-1 space-y-2 overflow-auto p-2"
         >
           {changes.files.map((file) => (
