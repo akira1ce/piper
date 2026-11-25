@@ -5,11 +5,9 @@ import { cn } from '@renderer/lib/utils'
 import { chatActions, useChatStore } from '../../store/chat'
 import { Composer } from './Composer'
 import { ExtensionDialog } from './ExtensionDialog'
-import { ModelPicker } from './ModelPicker'
 import { MessageList } from './MessageList'
 import { QueueChips } from './QueueChips'
-import { StatsBar } from './StatsBar'
-import { ThinkingPicker } from './ThinkingPicker'
+import { StatusBar } from './StatusBar'
 import { useProjectsStore } from '../../store/projects'
 import { uiActions, useUiStore } from '../../store/ui'
 
@@ -18,10 +16,7 @@ export function Chat(): React.JSX.Element {
   const diffVisible = useUiStore((state) => state.diffVisible)
   const status = useChatStore((state) => state.status)
   const banner = useChatStore((state) => state.banner)
-  const retryAttempt = useChatStore((state) => state.retryAttempt)
   const sessionPath = useChatStore((state) => state.sessionPath)
-  const extensionStatus = useChatStore((state) => state.extensionStatus)
-  const sessionId = useChatStore((state) => state.sessionId)
   const activeSessionPath = useProjectsStore((state) => state.activeSessionPath)
   const sessions = useProjectsStore((state) => state.sessions)
   const title = useMemo(() => {
@@ -70,44 +65,6 @@ export function Chat(): React.JSX.Element {
         </Button>
       </header>
 
-      <div className="text-accent-neutral flex items-center justify-between gap-2 px-3 py-1 text-[11px]">
-        <div className="flex min-w-0 items-center gap-2">
-          <span className="shrink-0">
-            {status === 'running'
-              ? '运行中'
-              : status === 'compacting'
-                ? '压缩上下文中'
-                : status === 'error'
-                  ? '连接异常'
-                  : '空闲'}
-          </span>
-          {sessionId && (
-            <span
-              className="text-accent-neutral/70 shrink-0 font-mono text-[10px]"
-              title={`session id: ${sessionId}`}
-            >
-              #{sessionId.slice(0, 8)}
-            </span>
-          )}
-          {extensionStatus && (
-            <span className="text-accent-neutral shrink-0 truncate">{extensionStatus}</span>
-          )}
-          {retryAttempt !== null && (
-            <button
-              type="button"
-              onClick={() => void chatActions.abortRetry()}
-              className="text-accent-sky hover:text-fore shrink-0 underline underline-offset-2"
-            >
-              中止重试（第 {retryAttempt} 次）
-            </button>
-          )}
-        </div>
-        <div className="flex shrink-0 items-center gap-2">
-          <ModelPicker />
-          <ThinkingPicker />
-          <StatsBar />
-        </div>
-      </div>
       {banner && (
         <div
           className={cn(
@@ -133,6 +90,8 @@ export function Chat(): React.JSX.Element {
       <QueueChips />
 
       <Composer />
+
+      <StatusBar />
 
       <ExtensionDialog />
     </div>
