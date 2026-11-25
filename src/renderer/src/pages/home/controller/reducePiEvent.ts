@@ -9,6 +9,7 @@ import type {
   ThinkingLevel,
   ToolCallView
 } from '@shared/piProtocol'
+import { fileChangeFromTool, mergeChanges, summarizeChanges } from './changes'
 import { messageToView, toText } from './messagesToView'
 
 export interface ChatView {
@@ -60,7 +61,10 @@ export function reduceBatch(view: ChatView, batch: PiBatch): ChatView {
     lastSeq: batch.seq,
     messages: view.messages.map((message) => ({
       ...message,
-      blocks: message.blocks.map((block) => ({ ...block }))
+      blocks: message.blocks.map((block) => ({ ...block })),
+      changes: message.changes
+        ? { ...message.changes, files: message.changes.files.map((file) => ({ ...file })) }
+        : undefined
     })),
     toolCalls: { ...view.toolCalls },
     dialogs: [...view.dialogs]
@@ -137,6 +141,15 @@ function applyEvent(view: ChatView, event: DomainEvent): void {
           durationMs: event.durationMs,
           preview: toText(event.result).slice(0, 400)
         }
+      }
+      if (!event.isError) {
+        const change = fileChangeFromTool({
+          toolName: event.toolName,
+          args: done?.args,
+          result: event.result,
+          cwd: view.cwd
+        })
+        if (change) attachChange(view, change)
       }
       return
     }
@@ -225,6 +238,12 @@ function ensureBlock(
   const block = message.blocks[index]
   if (kind === 'toolcall') block.kind = 'tool'
   return block
+}
+
+function attachChange(view: ChatView, change: Parameters<typeof mergeChanges>[1]): void {
+  const message = lastAssistant(view)
+  if (!message) return
+  message.changes = summarizeChanges(mergeChanges(message.changes?.files ?? [], change))
 }
 
 function lastAssistant(view: ChatView): MessageView | undefined {

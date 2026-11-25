@@ -1,4 +1,5 @@
 import { Moon, Plus, RefreshCw, Sun } from 'lucide-react'
+import { Accordion } from '@renderer/components/ui/accordion'
 import { Button } from '@renderer/components/ui/button'
 import { themeActions, useThemeStore } from '@renderer/store/theme'
 import { projectActions, useProjectsStore } from '../../store/projects'
@@ -11,6 +12,9 @@ export function Sider(): React.JSX.Element {
   const activeSessionPath = useProjectsStore((state) => state.activeSessionPath)
   const loading = useProjectsStore((state) => state.loading)
   const theme = useThemeStore((state) => state.resolved)
+  const expandedIds = projects
+    .filter((project) => expanded[project.id])
+    .map((project) => project.id)
 
   return (
     <div className="bg-card flex h-full flex-col">
@@ -28,18 +32,18 @@ export function Sider(): React.JSX.Element {
       </div>
 
       <div className="flex-1 overflow-y-auto px-2 py-1">
-        {projects.map((project) => (
-          <ProjectGroup
-            key={project.id}
-            project={project}
-            sessions={sessions[project.id] ?? []}
-            expanded={expanded[project.id] ?? false}
-            activeSessionPath={activeSessionPath}
-            onToggle={() => projectActions.toggle(project.id)}
-            onNewSession={() => void projectActions.newSession(project)}
-            onOpenSession={(session) => void projectActions.openSession(project, session)}
-          />
-        ))}
+        <Accordion type="multiple" value={expandedIds} onValueChange={projectActions.setExpanded}>
+          {projects.map((project) => (
+            <ProjectGroup
+              key={project.id}
+              project={project}
+              sessions={sessions[project.id] ?? []}
+              activeSessionPath={activeSessionPath}
+              onNewSession={() => void projectActions.newSession(project)}
+              onOpenSession={(session) => void projectActions.openSession(project, session)}
+            />
+          ))}
+        </Accordion>
         {projects.length === 0 && !loading && (
           <div className="px-2 py-3">
             <p className="text-xs">还没有项目</p>

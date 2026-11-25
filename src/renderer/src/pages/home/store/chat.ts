@@ -8,7 +8,7 @@ export const useChatStore = create<ChatView>(() => initialChatView())
 export const chatActions = {
   apply: (batch: PiBatch): void => useChatStore.setState((view) => reduceBatch(view, batch)),
   loadMessages: (raw: unknown[]): void => {
-    const { messages, toolCalls } = messagesToView(raw)
+    const { messages, toolCalls } = messagesToView(raw, { cwd: useChatStore.getState().cwd })
     useChatStore.setState({ messages, toolCalls })
   },
   reset: (): void => useChatStore.setState(initialChatView(), true),

@@ -57,10 +57,25 @@ export interface MessageBlock {
   toolCallId?: string
 }
 
+export interface FileChange {
+  path: string
+  status: 'modified' | 'created'
+  additions: number
+  deletions: number
+  patch: string
+}
+
+export interface TurnChanges {
+  files: FileChange[]
+  additions: number
+  deletions: number
+}
+
 export interface MessageView {
   id: string
   role: 'user' | 'assistant'
   blocks: MessageBlock[]
+  changes?: TurnChanges
 }
 
 export interface ExtensionUiRequest {
@@ -103,6 +118,7 @@ export type DomainEvent =
   | {
       type: 'tool_end'
       toolCallId: string
+      toolName: string
       result: unknown
       isError: boolean
       durationMs?: number
@@ -154,6 +170,7 @@ export type PiCommand =
   | { type: 'pickDirectory' }
   | { type: 'deleteSession'; sessionPath: string }
   | { type: 'setTheme'; theme: 'light' | 'dark' }
+  | { type: 'files'; cwd: string }
   | { type: 'lastSession' }
   | { type: 'rememberSession'; projectId: string; sessionPath: string }
   | {

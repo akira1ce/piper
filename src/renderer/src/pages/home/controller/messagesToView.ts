@@ -1,4 +1,5 @@
 import type { MessageBlock, MessageView, ToolCallView } from '@shared/piProtocol'
+import { fileChangeFromTool, mergeChanges, summarizeChanges } from './changes'
 
 interface RawBlock {
   type?: string
@@ -15,22 +16,38 @@ interface RawMessage {
   toolCallId?: string
   toolName?: string
   isError?: boolean
+  details?: { patch?: string }
 }
 
-export function messagesToView(raw: unknown[]): {
+interface ToolCallInfo {
+  messageIndex: number
+  toolName: string
+  args: unknown
+}
+
+export interface MessagesToViewOptions {
+  cwd?: string | null
+}
+
+export function messagesToView(
+  raw: unknown[],
+  options: MessagesToViewOptions = {}
+): {
   messages: MessageView[]
   toolCalls: Record<string, ToolCallView>
 } {
   const messages: MessageView[] = []
   const toolCalls: Record<string, ToolCallView> = {}
+  const calls = new Map<string, ToolCallInfo>()
 
   for (const item of raw) {
     const message = item as RawMessage
     if (message.role === 'toolResult') {
       applyToolResult(toolCalls, message)
+      applyChange(messages, calls.get(message.toolCallId ?? ''), message, options.cwd ?? null)
       continue
     }
-    const view = messageToView(message, messages.length, toolCalls)
+    const view = messageToView(message, messages.length, toolCalls, calls)
     if (view) messages.push(view)
   }
 
@@ -40,18 +57,24 @@ export function messagesToView(raw: unknown[]): {
 export function messageToView(
   raw: unknown,
   index = 0,
-  toolCalls: Record<string, ToolCallView> = {}
+  toolCalls: Record<string, ToolCallView> = {},
+  calls?: Map<string, ToolCallInfo>
 ): MessageView | null {
   const message = raw as RawMessage
   if (message.role !== 'user' && message.role !== 'assistant') return null
   return {
     id: `m_${index}`,
     role: message.role,
-    blocks: toBlocks(message.content, toolCalls)
+    blocks: toBlocks(message.content, toolCalls, index, calls)
   }
 }
 
-function toBlocks(content: unknown, toolCalls: Record<string, ToolCallView>): MessageBlock[] {
+function toBlocks(
+  content: unknown,
+  toolCalls: Record<string, ToolCallView>,
+  messageIndex: number,
+  calls?: Map<string, ToolCallInfo>
+): MessageBlock[] {
   if (typeof content === 'string') return [{ kind: 'text', text: content, streaming: false }]
   if (!Array.isArray(content)) return []
 
@@ -65,6 +88,11 @@ function toBlocks(content: unknown, toolCalls: Record<string, ToolCallView>): Me
       blocks.push({ kind: 'text', text: '[图片]', streaming: false })
     } else if (item.type === 'toolCall' && item.id) {
       blocks.push({ kind: 'tool', toolCallId: item.id, text: '', streaming: false })
+      calls?.set(item.id, {
+        messageIndex,
+        toolName: item.name ?? 'tool',
+        args: item.arguments
+      })
       // 历史会话默认已完成；流式过程中已有状态时保留不覆盖
       toolCalls[item.id] ??= {
         toolCallId: item.id,
@@ -76,6 +104,25 @@ function toBlocks(content: unknown, toolCalls: Record<string, ToolCallView>): Me
     }
   }
   return blocks
+}
+
+function applyChange(
+  messages: MessageView[],
+  call: ToolCallInfo | undefined,
+  message: RawMessage,
+  cwd: string | null
+): void {
+  if (!call) return
+  const target = messages[call.messageIndex]
+  if (!target) return
+  const change = fileChangeFromTool({
+    toolName: call.toolName,
+    args: call.args,
+    result: { details: message.details },
+    cwd
+  })
+  if (!change) return
+  target.changes = summarizeChanges(mergeChanges(target.changes?.files ?? [], change))
 }
 
 function applyToolResult(toolCalls: Record<string, ToolCallView>, message: RawMessage): void {

@@ -12,6 +12,8 @@ import { ProjectRegistry } from './projects'
 import { AppStateStore } from './appState'
 import { registerPiIpc, EVENT_CHANNEL } from './ipc'
 
+app.commandLine.appendSwitch('remote-debugging-port', '9333')
+
 function createWindow(): void {
   const mainWindow = new BrowserWindow({
     width: 1280,

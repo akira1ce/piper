@@ -41,7 +41,14 @@ describe('reduceBatch', () => {
       view,
       batch([
         { type: 'tool_start', toolCallId: 'c1', toolName: 'bash', args: { command: 'ls' } },
-        { type: 'tool_end', toolCallId: 'c1', result: {}, isError: false, durationMs: 12 }
+        {
+          type: 'tool_end',
+          toolCallId: 'c1',
+          toolName: 'bash',
+          result: {},
+          isError: false,
+          durationMs: 12
+        }
       ])
     )
     expect(view.toolCalls.c1).toMatchObject({ state: 'done', durationMs: 12 })
@@ -125,6 +132,63 @@ describe('reduceBatch', () => {
       batch([{ type: 'extension_ui', request: { id: 's1', method: 'setStatus' } }], 2)
     )
     expect(view.extensionStatus).toBeNull()
+  })
+
+  it('attaches edit patches to the current assistant message', () => {
+    let view = reduceBatch(
+      initialChatView(),
+      batch([{ type: 'message_start', message: { role: 'assistant', content: [] } }])
+    )
+    view = reduceBatch(
+      view,
+      batch(
+        [
+          { type: 'tool_start', toolCallId: 'c1', toolName: 'edit', args: { path: 'src/a.ts' } },
+          {
+            type: 'tool_end',
+            toolCallId: 'c1',
+            toolName: 'edit',
+            result: {
+              details: { patch: '--- a/src/a.ts\n+++ b/src/a.ts\n@@ -1 +1 @@\n-old\n+new' }
+            },
+            isError: false
+          }
+        ],
+        2
+      )
+    )
+    expect(view.messages[0].changes).toMatchObject({
+      additions: 1,
+      deletions: 1,
+      files: [{ path: 'src/a.ts' }]
+    })
+  })
+
+  it('attaches write content as a created file', () => {
+    let view = reduceBatch(
+      { ...initialChatView(), cwd: '/repo' },
+      batch([{ type: 'message_start', message: { role: 'assistant', content: [] } }])
+    )
+    view = reduceBatch(
+      view,
+      batch(
+        [
+          {
+            type: 'tool_start',
+            toolCallId: 'c1',
+            toolName: 'write',
+            args: { path: '/repo/new.md', content: 'a\nb' }
+          },
+          { type: 'tool_end', toolCallId: 'c1', toolName: 'write', result: null, isError: false }
+        ],
+        2
+      )
+    )
+    expect(view.messages[0].changes?.files[0]).toMatchObject({
+      path: 'new.md',
+      status: 'created',
+      additions: 2
+    })
   })
 
   it('rejects stale batches', () => {

@@ -67,6 +67,63 @@ describe('messagesToView', () => {
     expect(toolCalls.c1.state).toBe('error')
   })
 
+  it('rebuilds turn changes from edit tool results', () => {
+    const patch = '--- a/src/a.ts\n+++ b/src/a.ts\n@@ -1 +1 @@\n-old\n+new'
+    const { messages } = messagesToView(
+      [
+        {
+          role: 'assistant',
+          content: [{ type: 'toolCall', id: 'c1', name: 'edit', arguments: { path: 'src/a.ts' } }],
+          timestamp: 1
+        },
+        {
+          role: 'toolResult',
+          toolCallId: 'c1',
+          toolName: 'edit',
+          content: [{ type: 'text', text: 'ok' }],
+          details: { patch },
+          isError: false,
+          timestamp: 2
+        }
+      ],
+      { cwd: '/repo' }
+    )
+    expect(messages[0].changes).toMatchObject({
+      additions: 1,
+      deletions: 1,
+      files: [{ path: 'src/a.ts' }]
+    })
+  })
+
+  it('rebuilds created files from write tool calls', () => {
+    const { messages } = messagesToView(
+      [
+        {
+          role: 'assistant',
+          content: [
+            {
+              type: 'toolCall',
+              id: 'c1',
+              name: 'write',
+              arguments: { path: '/repo/new.md', content: 'a\nb' }
+            }
+          ],
+          timestamp: 1
+        },
+        {
+          role: 'toolResult',
+          toolCallId: 'c1',
+          toolName: 'write',
+          content: [{ type: 'text', text: 'ok' }],
+          isError: false,
+          timestamp: 2
+        }
+      ],
+      { cwd: '/repo' }
+    )
+    expect(messages[0].changes?.files[0]).toMatchObject({ path: 'new.md', status: 'created' })
+  })
+
   it('skips system messages and renders image placeholders', () => {
     const { messages } = messagesToView([
       { role: 'system', content: 'prompt', timestamp: 1 },
