@@ -93,9 +93,11 @@ export const projectActions = {
     return projects.find((project) => project.available)
   },
 
-  toggle: (projectId: string): void =>
+  setExpanded: (projectIds: string[]): void =>
     useProjectsStore.setState((state) => ({
-      expanded: { ...state.expanded, [projectId]: !state.expanded[projectId] }
+      expanded: Object.fromEntries(
+        state.projects.map((project) => [project.id, projectIds.includes(project.id)])
+      )
     })),
 
   newSession: async (project: Project): Promise<void> => {
