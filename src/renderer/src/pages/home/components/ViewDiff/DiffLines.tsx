@@ -50,7 +50,7 @@ export function DiffLines({ file, showHeader = true }: DiffLinesProps): JSX.Elem
               >
                 {line.type === 'add' ? '+' : line.type === 'del' ? '-' : ' '}
               </span>
-              <span className="min-w-0 flex-1 whitespace-pre">{line.text}</span>
+              <span className="min-w-0 flex-1">{line.text}</span>
             </div>
           )
         )}

@@ -5,8 +5,13 @@ import { cn } from '@renderer/lib/utils'
 import { buildTree } from '../../controller/fileTree'
 import { useChatStore } from '../../store/chat'
 import { reviewActions, useReviewStore } from '../../store/review'
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger
+} from '@renderer/components/ui/accordion'
 import { DiffLines } from './DiffLines'
-import { FileDiffSection } from './FileDiffSection'
 import { FileTree } from './FileTree'
 
 export function ViewDiff(): React.JSX.Element {
@@ -32,7 +37,7 @@ export function ViewDiff(): React.JSX.Element {
     }
   }, [changes, cwd, mode])
 
-  const files = index.owner === changes ? index.files : []
+  const files = useMemo(() => (index.owner === changes ? index.files : []), [index, changes])
   const changedMap = useMemo(() => {
     const map = new Map<string, FileChange>()
     for (const file of changes?.files ?? []) map.set(file.path, file)
@@ -91,16 +96,35 @@ export function ViewDiff(): React.JSX.Element {
       </header>
 
       {mode === 'accordion' ? (
-        <div className="min-h-0 flex-1 space-y-2 overflow-auto p-2">
+        <Accordion
+          key={changes.files.map((file) => file.path).join('|')}
+          type="multiple"
+          defaultValue={changes.files.map((file) => file.path)}
+          className="min-h-0 flex-1 space-y-2 overflow-auto p-2"
+        >
           {changes.files.map((file) => (
-            <FileDiffSection
+            <AccordionItem
               key={file.path}
-              file={file}
-              selected={selectedPath === file.path}
-              onSelect={() => reviewActions.select(file.path)}
-            />
+              value={file.path}
+              className={cn(
+                'border-accent-neutral/15 rounded-lg border px-3',
+                selectedPath === file.path && 'border-accent-neutral/40'
+              )}
+            >
+              <AccordionTrigger
+                className="items-center gap-2 py-2 text-[11px] hover:no-underline"
+                onClick={() => reviewActions.select(file.path)}
+              >
+                <span className="min-w-0 flex-1 truncate font-mono text-[11px]">{file.path}</span>
+                <span className="text-accent-emerald shrink-0 text-[11px]">+{file.additions}</span>
+                <span className="text-accent-rose shrink-0 text-[11px]">-{file.deletions}</span>
+              </AccordionTrigger>
+              <AccordionContent className="p-0">
+                <DiffLines file={file} showHeader={false} />
+              </AccordionContent>
+            </AccordionItem>
           ))}
-        </div>
+        </Accordion>
       ) : (
         <div className="flex min-h-0 min-w-0 flex-1">
           <div className="border-accent-neutral/10 w-56 shrink-0 overflow-y-auto border-r">
