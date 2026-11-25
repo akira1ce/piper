@@ -1,4 +1,4 @@
-import { FileDiff, FolderTree, List, X } from 'lucide-react'
+import { FileDiff, FolderTree, List } from 'lucide-react'
 import { useEffect, useMemo, useState } from 'react'
 import type { FileChange } from '@shared/piProtocol'
 import { cn } from '@renderer/lib/utils'
@@ -88,14 +88,6 @@ export function ViewDiff(): React.JSX.Element {
             <FolderTree className="size-3.5" />
           </button>
         </div>
-        <button
-          type="button"
-          aria-label="关闭审阅"
-          onClick={reviewActions.close}
-          className="text-accent-neutral hover:text-fore window-no-drag"
-        >
-          <X className="size-4" />
-        </button>
       </header>
 
       {mode === 'accordion' ? (

@@ -12,7 +12,7 @@ export function DiffLines({ file, showHeader = true }: DiffLinesProps): JSX.Elem
   const lines = parsePatch(file.patch)
 
   return (
-    <div className="min-w-0 font-mono text-[11px]">
+    <div className="w-full min-w-0 overflow-x-auto font-mono text-[11px]">
       {showHeader && (
         <div className="bg-card border-accent-neutral/10 sticky top-0 z-10 flex items-center gap-2 border-b px-3 py-1.5">
           <span className="min-w-0 flex-1 truncate">{file.path}</span>
