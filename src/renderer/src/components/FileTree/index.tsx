@@ -60,6 +60,19 @@ interface FileTreeRowProps {
   defaultOpenDepth: number
 }
 
+interface TreeLabelProps {
+  name: string
+}
+
+/** 层级已由缩进体现，超长名字从左侧省略，保住尾部更可辨识的部分。 */
+function TreeLabel({ name }: TreeLabelProps): JSX.Element {
+  return (
+    <span className="min-w-0 flex-1 truncate text-left [direction:rtl]" title={name}>
+      <span className="[direction:ltr] [unicode-bidi:isolate]">{name}</span>
+    </span>
+  )
+}
+
 function FileTreeRow({
   node,
   depth,
@@ -84,7 +97,7 @@ function FileTreeRow({
               <ChevronRight className="size-3" />
             </span>
             <FolderIcon className="size-3 shrink-0" />
-            <span className="min-w-0 flex-1 truncate text-left">{node.name}</span>
+            <TreeLabel name={node.name} />
           </Button>
         </CollapsibleTrigger>
         <CollapsibleContent>
@@ -121,7 +134,7 @@ function FileTreeRow({
       )}
     >
       <FileIcon className="size-3 shrink-0" />
-      <span className="min-w-0 flex-1 truncate text-left">{node.name}</span>
+      <TreeLabel name={node.name} />
       {renderSuffix?.(node)}
     </Button>
   )
