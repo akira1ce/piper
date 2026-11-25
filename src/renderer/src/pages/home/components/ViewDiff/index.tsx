@@ -107,7 +107,7 @@ export function ViewDiff(): React.JSX.Element {
               key={file.path}
               value={file.path}
               className={cn(
-                'border-accent-neutral/15 rounded-lg border px-3',
+                'border-accent-neutral/15 rounded-lg border px-3 last:border-b',
                 selectedPath === file.path && 'border-accent-neutral/40'
               )}
             >
