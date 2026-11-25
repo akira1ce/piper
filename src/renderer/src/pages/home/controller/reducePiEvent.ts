@@ -15,6 +15,7 @@ export interface ChatView {
   status: 'idle' | 'running' | 'compacting' | 'reconnecting' | 'error'
   lastSeq: number
   sessionPath: string | null
+  sessionId: string | null
   cwd: string | null
   thinkingLevel: ThinkingLevel
   messages: MessageView[]
@@ -35,6 +36,7 @@ export function initialChatView(): ChatView {
     status: 'idle',
     lastSeq: 0,
     sessionPath: null,
+    sessionId: null,
     cwd: null,
     thinkingLevel: 'off',
     messages: [],

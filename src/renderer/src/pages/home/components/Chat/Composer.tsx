@@ -1,8 +1,9 @@
 import { ArrowUp, Square } from 'lucide-react'
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import { toast } from 'sonner'
 import { Button } from '@renderer/components/ui/button'
 import { cn } from '@renderer/lib/utils'
+import { shouldSubmitOnEnter } from '../../controller/composerKeys'
 import { useChatStore } from '../../store/chat'
 
 type Behavior = 'steer' | 'followUp'
@@ -10,6 +11,7 @@ type Behavior = 'steer' | 'followUp'
 export function Composer(): React.JSX.Element {
   const [text, setText] = useState('')
   const [behavior, setBehavior] = useState<Behavior>('steer')
+  const composingRef = useRef(false)
   const status = useChatStore((state) => state.status)
   const sessionPath = useChatStore((state) => state.sessionPath)
   const running = status === 'running' || status === 'compacting'
@@ -47,8 +49,21 @@ export function Composer(): React.JSX.Element {
           placeholder={sessionPath ? '给 pi 发消息…' : '先在左侧选择或新建一个会话'}
           disabled={!sessionPath}
           onChange={(event) => setText(event.target.value)}
+          onCompositionStart={() => {
+            composingRef.current = true
+          }}
+          onCompositionEnd={() => {
+            composingRef.current = false
+          }}
           onKeyDown={(event) => {
-            if (event.key === 'Enter' && !event.shiftKey) {
+            const native = event.nativeEvent as KeyboardEvent
+            const submit = shouldSubmitOnEnter({
+              key: event.key,
+              shiftKey: event.shiftKey,
+              isComposing: composingRef.current || native.isComposing,
+              keyCode: native.keyCode
+            })
+            if (submit) {
               event.preventDefault()
               void send()
             }

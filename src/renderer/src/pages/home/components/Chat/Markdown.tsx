@@ -9,7 +9,7 @@ interface MarkdownProps {
 
 export const Markdown = memo(function Markdown({ text, streaming }: MarkdownProps) {
   return (
-    <Streamdown className="prose prose-sm" plugins={{ code }} isAnimating={streaming}>
+    <Streamdown className="chat-markdown" plugins={{ code }} isAnimating={streaming}>
       {text}
     </Streamdown>
   )

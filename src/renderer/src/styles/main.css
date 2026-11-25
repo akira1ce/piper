@@ -1,11 +1,9 @@
 @import 'tailwindcss';
 @import 'tw-animate-css';
 @import 'streamdown/styles.css';
+@import './streamdown.css';
 @import '../theme/tokens.css';
 @import './shadcn.css';
-@import './prose.css';
-
-@plugin '@tailwindcss/typography';
 
 /* dark-mode -> class: dark */
 @custom-variant dark (&:where(.dark, .dark *));

@@ -1,4 +1,4 @@
-import { app, shell, BrowserWindow, session } from 'electron'
+import { app, shell, BrowserWindow, nativeTheme, session } from 'electron'
 import { execFile } from 'node:child_process'
 import { accessSync } from 'node:fs'
 import { join } from 'node:path'
@@ -20,7 +20,7 @@ function createWindow(): void {
     minHeight: 600,
     show: false,
     autoHideMenuBar: true,
-    backgroundColor: '#0d0d0d',
+    backgroundColor: nativeTheme.shouldUseDarkColors ? '#0c0c14' : '#ffffff',
     titleBarStyle: process.platform === 'darwin' ? 'hiddenInset' : 'default',
     ...(process.platform === 'linux' ? { icon } : {}),
     webPreferences: {
