@@ -1,4 +1,5 @@
 import { File as FileIcon } from 'lucide-react'
+import { useEffect, useRef } from 'react'
 import type { JSX } from 'react'
 import { cn } from '@renderer/lib/utils'
 
@@ -20,6 +21,12 @@ export function FileMentionPopup({
   loading,
   position
 }: FileMentionPopupProps): JSX.Element {
+  const activeRef = useRef<HTMLButtonElement>(null)
+
+  useEffect(() => {
+    activeRef.current?.scrollIntoView({ block: 'nearest' })
+  }, [activeIndex])
+
   return (
     <div
       className="bg-card border-accent-neutral/25 fixed z-50 w-80 overflow-y-auto rounded-lg border p-1 shadow-lg"
@@ -41,6 +48,7 @@ export function FileMentionPopup({
           return (
             <button
               key={path}
+              ref={index === activeIndex ? activeRef : undefined}
               type="button"
               onMouseEnter={() => onHover(index)}
               onMouseDown={(event) => {

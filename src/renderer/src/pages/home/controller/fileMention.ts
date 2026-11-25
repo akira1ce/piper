@@ -6,6 +6,8 @@ export interface MentionContext {
 }
 
 const WORD_BREAK = /[\s([{"'`,;]/
+/** 只有 ASCII 单词字符才算“紧贴单词”，中文等非 ASCII 字符视为边界 */
+const ASCII_WORD = /[A-Za-z0-9_]/
 
 /**
  * 判断光标前是否处于一个 `@file` 补全 token 内。
@@ -18,9 +20,9 @@ export function getMentionContext(text: string, caret: number): MentionContext |
     const char = before[index]
     if (char === '@') {
       if (index === 0) return { start: index, query: before.slice(index + 1) }
-      return WORD_BREAK.test(before[index - 1])
-        ? { start: index, query: before.slice(index + 1) }
-        : null
+      return ASCII_WORD.test(before[index - 1])
+        ? null
+        : { start: index, query: before.slice(index + 1) }
     }
     if (WORD_BREAK.test(char)) return null
   }
