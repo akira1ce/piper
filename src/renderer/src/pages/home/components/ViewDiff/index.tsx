@@ -12,23 +12,25 @@ export function ViewDiff(): React.JSX.Element {
   const changes = useReviewStore((state) => state.changes)
   const selectedPath = useReviewStore((state) => state.selectedPath)
   const cwd = useChatStore((state) => state.cwd)
-  const [files, setFiles] = useState<string[]>([])
+  const [index, setIndex] = useState<{ owner: unknown; files: string[] }>({
+    owner: null,
+    files: []
+  })
 
   useEffect(() => {
-    if (!changes || !cwd) {
-      setFiles([])
-      return
-    }
+    if (!changes || !cwd) return
     let alive = true
     void window.api.pi.invoke({ type: 'files', cwd }).then((result) => {
       if (!alive || !result.ok) return
       const data = result.data as { files: string[] }
-      setFiles(data.files)
+      setIndex({ owner: changes, files: data.files })
     })
     return () => {
       alive = false
     }
   }, [changes, cwd])
+
+  const files = index.owner === changes ? index.files : []
 
   const changedMap = useMemo(() => {
     const map = new Map<string, FileChange>()
