@@ -13,6 +13,7 @@ import type { SessionIndex } from './pi/sessionIndex'
 import type { ProjectRegistry } from './projects'
 import type { AppStateStore } from './appState'
 import { isInsideSessionsDir } from './ipcPaths'
+import { listProjectFiles } from './fileIndex'
 
 export const INVOKE_CHANNEL = 'piper:invoke'
 export const EVENT_CHANNEL = 'piper:event'
@@ -44,6 +45,7 @@ const COMMANDS = new Set<PiCommand['type']>([
   'rememberSession',
   'deleteSession',
   'setTheme',
+  'files',
   'extensionRespond'
 ])
 
@@ -108,6 +110,8 @@ async function route(deps: IpcDeps, command: PiCommand): Promise<PiResult> {
     case 'prompt':
       if (!command.text.trim()) return { ok: false, error: '消息不能为空' }
       return deps.gateway.handle(command)
+    case 'files':
+      return { ok: true, data: await listProjectFiles(command.cwd) }
     case 'setTheme': {
       nativeTheme.themeSource = command.theme
       const color = command.theme === 'dark' ? '#0c0c14' : '#ffffff'

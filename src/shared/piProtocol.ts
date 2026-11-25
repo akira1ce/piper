@@ -170,6 +170,7 @@ export type PiCommand =
   | { type: 'pickDirectory' }
   | { type: 'deleteSession'; sessionPath: string }
   | { type: 'setTheme'; theme: 'light' | 'dark' }
+  | { type: 'files'; cwd: string }
   | { type: 'lastSession' }
   | { type: 'rememberSession'; projectId: string; sessionPath: string }
   | {
