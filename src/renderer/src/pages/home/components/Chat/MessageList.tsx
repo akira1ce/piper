@@ -35,7 +35,11 @@ export function MessageList(): React.JSX.Element {
 
   const turns = useMemo(() => buildTurns(messages), [messages])
   const virtualItems = virtualizer.getVirtualItems()
-  const visibleIndex = virtualItems[0]?.index ?? messages.length - 1
+  // 取真正可见的第一条，而不是含 overscan 的 virtualItems[0]，避免高亮偏早
+  const visibleIndex =
+    virtualizer.getVirtualItemForOffset(virtualizer.scrollOffset ?? 0)?.index ??
+    virtualItems[0]?.index ??
+    messages.length - 1
 
   // 贴底由 useStickToBottom 的 scrollHeight 驱动；这里只处理流式输出时
   // 最后一条消息高度持续增长的情况。
