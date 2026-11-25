@@ -2,6 +2,7 @@ import { FilePenLine } from 'lucide-react'
 import type { JSX } from 'react'
 import type { TurnChanges } from '@shared/piProtocol'
 import { Button } from '@renderer/components/ui/button'
+import { FilePathLabel } from '../FilePathLabel'
 import { reviewActions } from '../../store/review'
 import { uiActions } from '../../store/ui'
 
@@ -44,7 +45,7 @@ export function ChangeSummaryCard({ changes }: ChangeSummaryCardProps): JSX.Elem
             }}
             className="hover:bg-card-hover flex w-full items-center gap-2 px-3 py-1.5 text-left"
           >
-            <span className="min-w-0 flex-1 truncate font-mono text-[11px]">{file.path}</span>
+            <FilePathLabel path={file.path} className="flex-1 text-[11px]" />
             <span className="text-accent-emerald text-[11px]">+{file.additions}</span>
             <span className="text-accent-rose text-[11px]">-{file.deletions}</span>
           </button>

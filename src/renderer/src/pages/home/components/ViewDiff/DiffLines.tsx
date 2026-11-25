@@ -1,6 +1,7 @@
 import type { JSX } from 'react'
 import type { FileChange } from '@shared/piProtocol'
 import { cn } from '@renderer/lib/utils'
+import { FilePathLabel } from '../FilePathLabel'
 import { parsePatch } from '../../controller/changes'
 
 interface DiffLinesProps {
@@ -15,7 +16,7 @@ export function DiffLines({ file, showHeader = true }: DiffLinesProps): JSX.Elem
     <div className="w-full min-w-0 overflow-x-auto font-mono text-[11px]">
       {showHeader && (
         <div className="bg-card border-accent-neutral/10 sticky top-0 z-10 flex items-center gap-2 border-b px-3 py-1.5">
-          <span className="min-w-0 flex-1 truncate">{file.path}</span>
+          <FilePathLabel path={file.path} className="flex-1" />
           <span className="text-accent-emerald shrink-0">+{file.additions}</span>
           <span className="text-accent-rose shrink-0">-{file.deletions}</span>
         </div>
