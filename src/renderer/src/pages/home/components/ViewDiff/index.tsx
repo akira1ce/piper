@@ -1,4 +1,4 @@
-import { FileDiff, X } from 'lucide-react'
+import { FileDiff, FolderTree, List, X } from 'lucide-react'
 import { useEffect, useMemo, useState } from 'react'
 import type { FileChange } from '@shared/piProtocol'
 import { cn } from '@renderer/lib/utils'
@@ -6,11 +6,13 @@ import { buildTree } from '../../controller/fileTree'
 import { useChatStore } from '../../store/chat'
 import { reviewActions, useReviewStore } from '../../store/review'
 import { DiffLines } from './DiffLines'
+import { FileDiffSection } from './FileDiffSection'
 import { FileTree } from './FileTree'
 
 export function ViewDiff(): React.JSX.Element {
   const changes = useReviewStore((state) => state.changes)
   const selectedPath = useReviewStore((state) => state.selectedPath)
+  const mode = useReviewStore((state) => state.mode)
   const cwd = useChatStore((state) => state.cwd)
   const [index, setIndex] = useState<{ owner: unknown; files: string[] }>({
     owner: null,
@@ -18,7 +20,7 @@ export function ViewDiff(): React.JSX.Element {
   })
 
   useEffect(() => {
-    if (!changes || !cwd) return
+    if (!changes || !cwd || mode !== 'tree') return
     let alive = true
     void window.api.pi.invoke({ type: 'files', cwd }).then((result) => {
       if (!alive || !result.ok) return
@@ -28,16 +30,14 @@ export function ViewDiff(): React.JSX.Element {
     return () => {
       alive = false
     }
-  }, [changes, cwd])
+  }, [changes, cwd, mode])
 
   const files = index.owner === changes ? index.files : []
-
   const changedMap = useMemo(() => {
     const map = new Map<string, FileChange>()
     for (const file of changes?.files ?? []) map.set(file.path, file)
     return map
   }, [changes])
-
   const tree = useMemo(() => buildTree(files), [files])
   const selected = changes?.files.find((file) => file.path === selectedPath)
 
@@ -55,8 +55,6 @@ export function ViewDiff(): React.JSX.Element {
     )
   }
 
-  const useTree = changes.files.length > 3 && tree.length > 0
-
   return (
     <div className="border-accent-neutral/20 flex h-full min-w-0 flex-col border-l">
       <header className="window-drag flex h-12 shrink-0 items-center gap-2 px-3">
@@ -64,6 +62,32 @@ export function ViewDiff(): React.JSX.Element {
         <span className="text-sm">变更</span>
         <span className="text-accent-neutral text-[11px]">{changes.files.length} 个文件</span>
         <div className="flex-1" />
+        <div className="window-no-drag border-accent-neutral/20 flex items-center gap-0.5 rounded border p-0.5">
+          <button
+            type="button"
+            aria-label="列表模式"
+            onClick={() => reviewActions.setMode('accordion')}
+            className={cn(
+              'rounded p-0.5',
+              mode === 'accordion'
+                ? 'bg-card-hover text-fore'
+                : 'text-accent-neutral hover:text-fore'
+            )}
+          >
+            <List className="size-3.5" />
+          </button>
+          <button
+            type="button"
+            aria-label="文件树模式"
+            onClick={() => reviewActions.setMode('tree')}
+            className={cn(
+              'rounded p-0.5',
+              mode === 'tree' ? 'bg-card-hover text-fore' : 'text-accent-neutral hover:text-fore'
+            )}
+          >
+            <FolderTree className="size-3.5" />
+          </button>
+        </div>
         <button
           type="button"
           aria-label="关闭审阅"
@@ -74,10 +98,21 @@ export function ViewDiff(): React.JSX.Element {
         </button>
       </header>
 
-      <div className="flex min-h-0 flex-1">
-        {changes.files.length > 1 && (
+      {mode === 'accordion' ? (
+        <div className="min-h-0 flex-1 space-y-2 overflow-auto p-2">
+          {changes.files.map((file) => (
+            <FileDiffSection
+              key={file.path}
+              file={file}
+              selected={selectedPath === file.path}
+              onSelect={() => reviewActions.select(file.path)}
+            />
+          ))}
+        </div>
+      ) : (
+        <div className="flex min-h-0 flex-1">
           <div className="border-accent-neutral/10 w-56 shrink-0 overflow-y-auto border-r">
-            {useTree ? (
+            {tree.length > 0 ? (
               <FileTree
                 nodes={tree}
                 changed={changedMap}
@@ -104,20 +139,20 @@ export function ViewDiff(): React.JSX.Element {
               </div>
             )}
           </div>
-        )}
 
-        <div className="min-w-0 flex-1 overflow-auto">
-          {selected ? (
-            <DiffLines file={selected} />
-          ) : (
-            <div className="flex h-full items-center justify-center">
-              <p className="text-accent-neutral text-xs">
-                {selectedPath ? '该文件本轮没有变更' : '选择一个文件查看 diff'}
-              </p>
-            </div>
-          )}
+          <div className="min-w-0 flex-1 overflow-auto">
+            {selected ? (
+              <DiffLines file={selected} />
+            ) : (
+              <div className="flex h-full items-center justify-center">
+                <p className="text-accent-neutral text-xs">
+                  {selectedPath ? '该文件本轮没有变更' : '选择一个文件查看 diff'}
+                </p>
+              </div>
+            )}
+          </div>
         </div>
-      </div>
+      )}
     </div>
   )
 }

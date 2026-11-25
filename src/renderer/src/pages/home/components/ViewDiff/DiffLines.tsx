@@ -5,18 +5,21 @@ import { parsePatch } from '../../controller/changes'
 
 interface DiffLinesProps {
   file: FileChange
+  showHeader?: boolean
 }
 
-export function DiffLines({ file }: DiffLinesProps): JSX.Element {
+export function DiffLines({ file, showHeader = true }: DiffLinesProps): JSX.Element {
   const lines = parsePatch(file.patch)
 
   return (
     <div className="min-w-0 font-mono text-[11px]">
-      <div className="bg-card border-accent-neutral/10 sticky top-0 z-10 flex items-center gap-2 border-b px-3 py-1.5">
-        <span className="min-w-0 flex-1 truncate">{file.path}</span>
-        <span className="text-accent-emerald shrink-0">+{file.additions}</span>
-        <span className="text-accent-rose shrink-0">-{file.deletions}</span>
-      </div>
+      {showHeader && (
+        <div className="bg-card border-accent-neutral/10 sticky top-0 z-10 flex items-center gap-2 border-b px-3 py-1.5">
+          <span className="min-w-0 flex-1 truncate">{file.path}</span>
+          <span className="text-accent-emerald shrink-0">+{file.additions}</span>
+          <span className="text-accent-rose shrink-0">-{file.deletions}</span>
+        </div>
+      )}
       <div className="pb-4">
         {lines.map((line, index) =>
           line.type === 'hunk' ? (
@@ -36,10 +39,7 @@ export function DiffLines({ file }: DiffLinesProps): JSX.Element {
               )}
             >
               <span className="text-accent-neutral/50 w-8 shrink-0 pr-2 text-right select-none">
-                {line.oldLine ?? ''}
-              </span>
-              <span className="text-accent-neutral/50 w-8 shrink-0 pr-2 text-right select-none">
-                {line.newLine ?? ''}
+                {line.newLine ?? line.oldLine ?? ''}
               </span>
               <span
                 className={cn(
@@ -50,7 +50,7 @@ export function DiffLines({ file }: DiffLinesProps): JSX.Element {
               >
                 {line.type === 'add' ? '+' : line.type === 'del' ? '-' : ' '}
               </span>
-              <span className="min-w-0 flex-1 whitespace-pre-wrap break-all">{line.text}</span>
+              <span className="min-w-0 flex-1 whitespace-pre">{line.text}</span>
             </div>
           )
         )}
