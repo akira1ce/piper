@@ -43,7 +43,7 @@ export function ViewDiff(): React.JSX.Element {
 
   if (!changes) {
     return (
-      <div className="border-accent-neutral/20 flex h-full min-w-0 flex-col border-l">
+      <div className="border-accent-neutral/20 flex h-full min-w-0 flex-col overflow-hidden border-l">
         <header className="window-drag flex h-12 shrink-0 items-center gap-2 px-3">
           <FileDiff className="text-accent-neutral size-4" />
           <span className="text-sm">变更</span>
@@ -56,7 +56,7 @@ export function ViewDiff(): React.JSX.Element {
   }
 
   return (
-    <div className="border-accent-neutral/20 flex h-full min-w-0 flex-col border-l">
+    <div className="border-accent-neutral/20 flex h-full min-w-0 flex-col overflow-hidden border-l">
       <header className="window-drag flex h-12 shrink-0 items-center gap-2 px-3">
         <FileDiff className="text-accent-neutral size-4" />
         <span className="text-sm">变更</span>
@@ -102,7 +102,7 @@ export function ViewDiff(): React.JSX.Element {
           ))}
         </div>
       ) : (
-        <div className="flex min-h-0 flex-1">
+        <div className="flex min-h-0 min-w-0 flex-1">
           <div className="border-accent-neutral/10 w-56 shrink-0 overflow-y-auto border-r">
             {tree.length > 0 ? (
               <FileTree
