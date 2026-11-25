@@ -118,6 +118,7 @@ export type DomainEvent =
   | {
       type: 'tool_end'
       toolCallId: string
+      toolName: string
       result: unknown
       isError: boolean
       durationMs?: number

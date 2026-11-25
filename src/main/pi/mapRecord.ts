@@ -38,6 +38,7 @@ export function mapRecord(record: Record_): DomainEvent[] {
         {
           type: 'tool_end',
           toolCallId: record.toolCallId,
+          toolName: record.toolName,
           result: record.result,
           isError: Boolean(record.isError),
           durationMs: record.durationMs
